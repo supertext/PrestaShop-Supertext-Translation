@@ -116,3 +116,7 @@ The table shows the reason for each item and language that fails; the other ones
 | *Your Supertext translation limit is exceeded* | Your Supertext plan's volume is used up; tell your administrator. |
 | *The translation could not be saved: …* | PrestaShop rejected a translated value. Translate that field by hand. |
 | *Timed out waiting for the Supertext translation* | Very long texts. Try again, or ask your administrator to raise the timeout. |
+
+## Support
+
+Questions, problems or ideas: use the [Supertext support form](https://integrations.supertext.com/en/support?platform=prestashop). Mention the version of PrestaShop and of the plugin, what you did and what you expected; an error message helps a lot. You get an answer by email, in your language.
