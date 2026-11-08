@@ -2,6 +2,8 @@
 
 Translate PrestaShop products, categories and CMS pages into your shop's other languages with **Supertext AI**, straight from the back-office lists.
 
+![Demo: an editor ticks the product Dark chocolate praline box in Catalog → Products, chooses Translate with Supertext in the bulk actions, translates it into German and French and opens the German version of the product](docs/images/demo.gif)
+
 Tick items in *Catalog → Products*, *Catalog → Categories* or *Design → Pages*, choose **Translate with Supertext** in the bulk actions, pick the languages and click **Translate**. The module writes the translation into each item's own language fields, so it shows up in the shop right away.
 
 - Works with PrestaShop's own languages: no extra multilingual module needed

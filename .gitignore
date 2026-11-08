@@ -7,5 +7,7 @@
 /supertext/config_*.xml
 /tests/docs/node_modules
 /tests/docs/package-lock.json
+/tests/docs/movie/out/
+/tests/docs/movie/voice-cache/
 .DS_Store
 /.phpstan-cache/

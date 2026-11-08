@@ -268,6 +268,32 @@ BASE_URL=http://localhost:8090/admin-dev DEMO_ADMIN_EMAIL=… DEMO_ADMIN_PASSWOR
 
 Run it in the same commit as any UI change the images show.
 
+## Demo movie
+
+`docs/images/demo.gif` (shown at the top of the README) is recorded by `tests/docs/movie.mjs` with Supertext's movie kit (`tests/docs/movie/`: Playwright screencast → ffmpeg; intro and outro cards, captions, cursor; Inter font under the SIL Open Font License in `movie/assets/fonts/`). Like the screenshots, it needs a **fresh** demo pointed at the stand-in API, `ffmpeg` and, for the voice, Piper:
+
+```bash
+pip install piper-tts                       # the voice; without it (or with MOVIE_VOICE=0) the movie is silent
+cd tests/docs && npm install
+node stand-in.mjs &                         # http://127.0.0.1:8765/v1/
+# fresh demo (empty database) with SUPERTEXT_API_ENDPOINT=http://127.0.0.1:8765/v1/,
+# SUPERTEXT_REPORT_URL=http://127.0.0.1:8765/report, SUPERTEXT_API_KEY=st-demo-0000-0000-0000 and DEMO_* set, on port 8090:
+BASE_URL=http://localhost:8090/admin-dev DEMO_EDITOR_EMAIL=… DEMO_EDITOR_PASSWORD=… npm run movie
+```
+
+About 53 seconds, 1280×720, an English voice and English captions: the demo editor shows the English product *Dark chocolate praline box*, ticks it in *Catalog → Products*, chooses *Translate with Supertext* in the *Bulk actions*, keeps *Deutsch* and *Français* (unticks *Italiano*), clicks *Translate* (page loads and the waiting time are cut), opens the product and switches it to German. The script writes the GIF (800 px, 12 fps, keep it under 3 MB) to `docs/images/demo.gif` and the MP4 to `tests/docs/movie/out/PrestaShop-Supertext-Translation.mp4` (git-ignored; `MOVIE_OUT` changes the path). The MP4 is not committed; the GIF is silent. The voice model (63 MB, pinned revision, checked by SHA-256) is downloaded once into `tests/docs/movie/voice-cache/` (git-ignored, never committed); the time spent generating speech is cut from the movie. Re-record it in the same commit when the translate page or the bulk action changes.
+
+**Install and configuration movie** (`tests/docs/movie-install.mjs`, `npm run movie:install`): the same kit, voice and look, for administrators. It needs the zip (`./build.sh`) and a demo where the module is **not** installed and `SUPERTEXT_API_KEY` is not set (start the demo once, then `php bin/console prestashop:module uninstall supertext` and remove `modules/supertext` in the container), signed in as the demo **administrator**:
+
+```bash
+./build.sh
+cd tests/docs && BASE_URL=http://localhost:8090/admin-dev DEMO_ADMIN_EMAIL=… DEMO_ADMIN_PASSWORD=… npm run movie:install
+```
+
+About 84 seconds: a terminal (`kit.terminal()`) with `./build.sh` (or the zip from the Releases page), the shop's languages (*International → Localization → Languages*), *Modules → Module Manager → Upload a module* with `supertext-<version>.zip` (installing is cut), *Configure*, where the API key comes from (supertext.com → Integrations → API; create an account at supertext.com), the made-up key `st-demo-0000-0000-0000` (the stand-in accepts any key), *Save* and the key check (*the connection to Supertext works*), the *Languages* panel (*Deutsch (Schweiz)* → *German (Switzerland) (de-CH)*, *Translation review* left off), *Save*, and where editors find *Translate with Supertext* (the products' *Bulk actions*). The note that the endpoint comes from `SUPERTEXT_API_ENDPOINT` is hidden, as in the screenshots, and so are the product thumbnails, which a restarted demo doesn't have. No GIF; the MP4 goes to `tests/docs/movie/out/PrestaShop-Supertext-Translation-install.mp4` (git-ignored, not committed; `MOVIE_OUT` changes the path). Re-record it when the installation steps or the settings page change.
+
+Voice: Piper voice “alba” (en_GB), trained on a dataset from the University of Edinburgh's Centre for Speech Technology Research, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+
 ## Code quality and security checks
 
 Before starting work in this repo, look at its open findings: code scanning alerts, secret scanning alerts, Dependabot PRs and the "Broken links in the docs" issue.

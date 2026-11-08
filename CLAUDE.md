@@ -83,7 +83,7 @@ Lessons from the live API, apply them here: header `Authorization: Supertext-Aut
 ## This repo
 
 - Before committing: `composer test`, PHP lint, PHPStan (`docs/DEVELOPER.md` → *Code quality and security checks*), `./build.sh`. CI also installs PrestaShop 9 in Docker and translates the demo content against the stand-in.
-- Test UI changes in a local PrestaShop with the module mounted (see `docs/DEVELOPER.md` → Local development) and regenerate the screenshots they affect (`tests/docs/screenshots.mjs`).
+- Test UI changes in a local PrestaShop with the module mounted (see `docs/DEVELOPER.md` → Local development) and regenerate the screenshots they affect (`tests/docs/screenshots.mjs`). Demo movies: `tests/docs/movie.mjs` (README GIF + MP4) and `tests/docs/movie-install.mjs` (install and configuration, MP4 only), kit in `tests/docs/movie/`; see `docs/DEVELOPER.md` → *Demo movie*.
 - New settings go in `supertext/src/Settings.php`, `views/templates/admin/configure.tpl` **and** the settings table in `docs/INSTALLATION.md`.
 - Translation review: per language as `review` in `SUPERTEXT_LANGUAGES` (checkbox in the *Languages* panel of `configure.tpl`); the review service URL is the setting `SUPERTEXT_REVIEW_URL` (env `SUPERTEXT_REVIEW_URL` wins, default `SupertextClient::REVIEW_URL`); `SupertextClient::forReview()` gives the second client, used only by `EntityTranslator`.
 - Translated fields live in `supertext/src/Translation/EntityTypes.php`; keep "What is translated" in `docs/DEVELOPER.md` and `docs/USER_GUIDE.md` in sync.

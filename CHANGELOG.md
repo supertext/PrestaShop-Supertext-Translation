@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## Unreleased
 
+- Docs: demo movie at the top of the README (`docs/images/demo.gif`), recorded with a voice by `tests/docs/movie.mjs`, and an install and configuration movie (`tests/docs/movie-install.mjs`, MP4 only, not committed).
 - Added: the Supertext support form is linked in the README, the user guide and GitHub's "New issue" page.
 - Added: PHP 8.5 in the CI test matrix (PrestaShop 9.2 runs on it; the module already allowed PHP 8.1 and later).
 - Added: **Translation review** on/off per shop language (*Modules → Module Manager → Supertext Translation → Configure → Languages*, column *Translation review*): translations into a language with it ticked go through Supertext's review service (Supertext Localization Review), where customers and Supertext linguists correct them on the shop's website with a Chrome extension; corrections come back into PrestaShop with the next translation (with *Overwrite existing translations*), and texts translated before keep their (reviewed) wording. Same API key, billing, languages and messages; other languages keep going directly to Supertext. New setting *Review service URL* (defaults to Supertext's review service; empty turns review off for every language; `SUPERTEXT_REVIEW_URL` on the server wins). Languages saved before have review off. All new texts in English, German, French and Italian.

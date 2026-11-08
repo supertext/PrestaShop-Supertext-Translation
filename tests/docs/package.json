@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "stand-in": "node stand-in.mjs",
-    "screenshots": "node screenshots.mjs"
+    "screenshots": "node screenshots.mjs",
+    "movie": "node movie.mjs",
+    "movie:install": "node movie-install.mjs"
   },
   "devDependencies": {
     "playwright": "^1.48.0"
