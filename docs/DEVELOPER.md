@@ -316,6 +316,14 @@ Before starting work in this repo, look at its open findings: code scanning aler
 - **GitHub settings** (set by Remy's setup script, not in the repo): secret scanning with push protection (a push containing a known token format is rejected; findings under *Security → Secret scanning*) and CodeQL default setup (findings under *Security → Code scanning* and as pull request comments). CodeQL doesn't cover PHP, which is why this repo runs PHPStan.
 - `.github/workflows/support-triage.yml`: support requests from the Supertext integrations website arrive as issues labelled `support` (contact details stay in the Supertext CMS). Claude classifies each one: answers questions (marked `<!-- supertext:reply -->`, emailed to the sender by the CMS) and closes them, fixes bugs as pull requests for review (never merged automatically), labels feature requests `feature-request`. Only people with triage rights can add labels, so outsiders can't start it. Needs the organisation secret `ANTHROPIC_API_KEY`; the workflow is the same in every Supertext repo.
 
+## Dependency updates
+
+Dependabot opens weekly pull requests (minor and patch updates grouped). Major updates the plugin can't take are ignored in `.github/dependabot.yml`:
+
+- `phpunit/phpunit` >=11: PHPUnit 11 and later need PHP 8.2+; the module supports PHP 8.1 (CI tests 8.1).
+
+Remove a rule when the plugin's minimum version (PHP, CMS) moves up far enough.
+
 ## Releasing
 
 Releases are published by `.github/workflows/release.yml` when the version is officially bumped; nobody tags or creates releases by hand.
