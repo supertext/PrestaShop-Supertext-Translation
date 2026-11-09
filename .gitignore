@@ -9,5 +9,8 @@
 /tests/docs/package-lock.json
 /tests/docs/movie/out/
 /tests/docs/movie/voice-cache/
+/tests/docs/stand-in.log
+/tests/e2e/node_modules/
+/tests/e2e/artifacts/
 .DS_Store
 /.phpstan-cache/

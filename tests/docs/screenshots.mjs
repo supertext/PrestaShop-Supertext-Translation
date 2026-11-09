@@ -50,6 +50,9 @@ async function session(email, password) {
   await page.locator('button[name=submitSupertextTest]').click()
   await page.waitForLoadState('networkidle')
   await page.locator('text=API key checked: the connection to Supertext works.').first().waitFor()
+  // The time of the key check changes with every run: show a fixed one, so the image only
+  // changes when the screen does.
+  await page.locator('#supertext-key-check small').evaluateAll((els) => els.forEach((e) => { e.textContent = 'Checked 10/01/2026 09:00:00' }))
   await shot('module-settings', union(await box('.alert-success', 2), await box('#supertext-connection', 2)))
 
   // An example override: formal German (not saved).

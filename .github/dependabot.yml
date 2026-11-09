@@ -13,6 +13,14 @@ updates:
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
+  - package-ecosystem: "npm"
+    directories: ["/tests/docs", "/tests/e2e"]
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

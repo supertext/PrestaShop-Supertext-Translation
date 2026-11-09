@@ -204,6 +204,28 @@ CI (`.github/workflows/ci.yml`):
 - **prestashop**: installs PrestaShop 9 in Docker, installs the built zip, runs `demo/setup.php` twice (the second run must change nothing, and no password may appear in the log), translates the sample product, category and page with `supertext:translate` against the stand-in API and checks the German and French rows, slug included; a second run must skip everything. Then it checks the Commando Center: exactly one `installed` report (plugin, system, key check `ok`, callback URL; never the key) reached the stand-in's fake center, and the public ping answers the challenge with `Cache-Control: no-store` (400 for a bad challenge).
 
 Unit tests worth knowing: `LanguageCodesTest` (exact matches, no default regions, the setting wins, sources, `unsupported_language`), `ReportingTest` (the report and the stored state never contain the key, the SDK version reported, a state stored by the SDK 0.2 reporter kept without a new report, `installed` → `settings_saved`, `upgraded` only after a version change, a 401 reported once without a request to Supertext, nothing sent with reports off, storage errors swallowed, ping answers, `SUPERTEXT_VERSION_REPORTS`), `SupertextClientTest` (codes sent as given, `unsupported_feature`, a rejected key, Translation review: `forReview()`, the default `REVIEW_URL`, off with an empty URL), `FileExchangeTest` (reference round trip, export with the planner's keys and the language setting, import: other plugin, unknown reference, missing language, permission, `ok` written, `source_changed` only with the option, kept without *Overwrite*, `untranslated`/`invalid_markup`/`missing` not written, invalid files, the 10 MB limit).
+`.github/workflows/checks.yml` and `links.yml` lint the workflows and check the links. `.github/workflows/e2e.yml` runs the end-to-end test against the real Supertext API and regenerates the docs screenshots (see *End-to-end tests*).
+
+## End-to-end tests
+
+The unit tests and the CI job **prestashop** use fakes. `.github/workflows/e2e.yml` also tests against the **real Supertext API**, so changes on Supertext's side (language codes, regional variants, formatting, rate limits) show up. It runs on every push to `main` that touches the module, the demo or the tests, on pull requests that change the E2E test or workflow, every Monday (05:48 UTC), and by hand (*Actions → E2E → Run workflow*). It builds the demo image once (Docker layer cache in GitHub Actions) and starts it twice on the runner's network (ports 8081 and 8082, `PRESTASHOP_DOMAIN=localhost:<port>`), each with its own database on a MySQL 8.4 service and demo accounts made up for the run:
+
+1. **Real API** (repository or organization secret `SUPERTEXT_API_KEY`; without it these steps are skipped with a warning). Version reports are off (`SUPERTEXT_VERSION_REPORTS=0`), so CI runs don't appear in the Commando Center.
+   - `tests/e2e/features.mjs` asks the live `GET features` (cost-free, no module or SDK code) whether every pair the demo translates (`en` → `de-CH`, `fr-CH`, `it-CH`) is offered; a missing pair fails the run. Whether the module's own language list matches the API is the SDK's job (its own tests).
+   - `tests/e2e/live.mjs` (Playwright, as the `DEMO_EDITOR` account with the Translator profile): through the back office's own lists (*Catalog → Products* bulk action for the two sample products, the row action in *Catalog → Categories* and *Design → Pages*) it opens *Translate with Supertext* and translates into every shop language. Checked on the page: no error or warning, every language shows a Supertext code and the codes are those `features.mjs` checked (`E2E_TARGETS`), every item × language ends *done*, the summary says 0 failed. Checked in the database (`ps_*_lang` of the default shop): every sample item has text of its own in each language; every field that has English text is filled and at least 80 % of them changed (single words may stay the same; unchanged fields are listed as `note`); no `data-st-id`/placeholder is left; bold, italics, links (with their URL), headings and list items are kept; the text is in the target language (common words of each language counted) and de-CH has no "ß"; the slug follows the translated name; the English source and the items' published state stay as they were. Then it translates everything again with *Overwrite existing translations*: the same rows must be updated (no new items or language rows). Each run translates the sample content twice into three languages (around 20,000 characters on the key's account).
+2. **Stand-in API**: the docs screenshots (see *Docs screenshots*), so the images don't change with each machine translation. If `docs/images/` changed, a second job pushes the branch `automation/docs-screenshots` and opens (or updates) the pull request "Docs: regenerate screenshots". This needs *Settings → Actions → General → Allow GitHub Actions to create and approve pull requests*. The screenshot script shows a fixed time for the API key check, so images only change when the UI does.
+
+If a run fails, the artifact `e2e-debug` has the result pages (`tests/e2e/artifacts/`), the demo containers' logs, PrestaShop's logs and the stand-in log. Locally:
+
+```bash
+cd tests/e2e && npm ci && npx playwright install chromium
+# fresh demo (new database) with a real SUPERTEXT_API_KEY, e.g. on port 8081 (PRESTASHOP_DOMAIN=localhost:8081)
+SUPERTEXT_API_KEY=… E2E_TARGETS=de-CH,fr-CH,it-CH node features.mjs
+BASE_URL=http://localhost:8081/admin-dev DATABASE_URL=mysql://user:pass@127.0.0.1:3306/prestashop \
+  EDITOR_EMAIL=… EDITOR_PASSWORD=… E2E_TARGETS=de-CH,fr-CH,it-CH npm run live
+```
+
+`live.mjs` also passes against the stand-in API (the stand-in returns real translations), which is how to try changes to it without a key.
 
 ## Demo (Railway)
 
@@ -257,7 +279,7 @@ The first start takes a few minutes (PrestaShop's installer).
 `tests/docs/screenshots.mjs` regenerates `docs/images/` with Playwright from a freshly started demo whose module talks to `tests/docs/stand-in.mjs`. The stand-in answers like the Supertext API and returns real German, French and Italian for the sample content (`tests/docs/samples.json`); the settings screenshots show the live API, because the endpoint comes from `SUPERTEXT_API_ENDPOINT` and the script hides the note about it.
 
 ```bash
-cd tests/docs && npm install && npx playwright install chromium
+cd tests/docs && npm ci && npx playwright install chromium
 node stand-in.mjs &
 # a fresh demo (empty database) running with SUPERTEXT_API_ENDPOINT=http://127.0.0.1:8765/v1/,
 # SUPERTEXT_REPORT_URL=http://127.0.0.1:8765/report (version reports go to the stand-in),
