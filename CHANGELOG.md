@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## Unreleased
 
+## 1.0.0 — 2026-11-10
+
+First stable release. Every plugin release is now tested end to end against the live Supertext API (`.github/workflows/e2e.yml`).
+
 - Docs: demo movie at the top of the README (`docs/images/demo.gif`), recorded with a voice by `tests/docs/movie.mjs`, and an install and configuration movie (`tests/docs/movie-install.mjs`, MP4 only, not committed).
 - Added: the Supertext support form is linked in the README, the user guide and GitHub's "New issue" page.
 - Added: PHP 8.5 in the CI test matrix (PrestaShop 9.2 runs on it; the module already allowed PHP 8.1 and later).

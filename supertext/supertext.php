@@ -42,7 +42,7 @@ class Supertext extends Module
     {
         $this->name                   = 'supertext';
         $this->tab                    = 'i18n_localization';
-        $this->version                = '0.1.0';
+        $this->version                = '1.0.0';
         $this->author                 = 'Supertext';
         $this->need_instance          = 0;
         $this->bootstrap              = true;
