@@ -8,12 +8,14 @@ namespace Supertext\PrestaShop\Sdk\V1;
  * Languages of the Supertext AI file translation API v1 (spec/languages.json, from the live `GET features`,
  * October 2026).
  *
- * There is no default region and no guessing: an integration maps its CMS languages to these codes (a
- * setting per language). A CMS code that equals a Supertext code (apart from case, "_" for "-" and
- * surrounding spaces) is used as it is; anything else is an unsupported_language error until the
- * administrator maps it. For the live list, use Client::getFeatures().
+ * An integration maps its CMS languages to these codes (a combo box per language, suggestTarget()
+ * preselected). A CMS code that equals a Supertext code (apart from case, "_" for "-" and surrounding
+ * spaces) is used as it is; a bare language Supertext offers only with a region or script gets its
+ * default ("de" → "de-DE", see DEFAULT_TARGETS); a region of a bare target is dropped ("es-ES" → "es");
+ * anything else is an unsupported_language error until the administrator maps it. For the live list,
+ * use Client::getFeatures().
  *
- *     Languages::target($cmsLocale, ['de' => 'de-CH']); // "de" → "de-CH", "fr_fr" → "fr-FR", "xx" → error
+ *     Languages::target($cmsLocale, ['de' => 'de-CH']); // "de" → "de-CH", "fr_fr" → "fr-FR", "en" → "en-US", "xx" → error
  *     Languages::source('en-US');                       // "en"
  */
 final class Languages
@@ -100,6 +102,24 @@ final class Languages
         ['code' => 'zh-Hant', 'name' => 'Chinese (Traditional)', 'politeness' => true],
     ];
 
+    /**
+     * The default target of a bare language that Supertext offers only with a region or script. Swiss
+     * German (gsw) has none: neither dialect is the obvious one.
+     *
+     * @var array<string, string>
+     */
+    public const DEFAULT_TARGETS = [
+        'de' => 'de-DE',
+        'en' => 'en-US',
+        'fr' => 'fr-FR',
+        'it' => 'it-IT',
+        'pt' => 'pt-PT',
+        'sr' => 'sr-Latn',
+        'zh' => 'zh-Hans',
+    ];
+
+    private const CHINESE_REGIONS = ['tw' => 'zh-Hant', 'hk' => 'zh-Hant', 'mo' => 'zh-Hant', 'cn' => 'zh-Hans', 'sg' => 'zh-Hans'];
+
     private function __construct()
     {
     }
@@ -108,6 +128,57 @@ final class Languages
     public static function matchTarget(string $code): ?string
     {
         return self::findTarget($code)['code'] ?? null;
+    }
+
+    /**
+     * The default target for a CMS code that has no exact match, else null: a bare language's DEFAULT_TARGETS
+     * entry ("de" → "de-DE"), Chinese regions ("zh-TW" → "zh-Hant", "zh-CN" → "zh-Hans"), language-Script-REGION
+     * ("sr-Latn-RS" → "sr-Latn") and language-REGION of a bare target ("es-ES" → "es"). Never a guessed
+     * region: "en-IE", "de-LI" → null.
+     */
+    public static function defaultTarget(string $code): ?string
+    {
+        $key = self::key($code);
+        if ($key === '' || self::findTarget($key) !== null) {
+            return null;
+        }
+        $parts = explode('-', $key);
+        $lang = $parts[0];
+        $count = \count($parts);
+        if ($count === 1) {
+            return self::DEFAULT_TARGETS[$lang] ?? null;
+        }
+        if ($count === 2 && $lang === 'zh') {
+            return self::CHINESE_REGIONS[$parts[1]] ?? null;
+        }
+        if ($count === 3 && preg_match('/^[a-z]{4}$/', $parts[1]) === 1 && self::isRegion($parts[2])) {
+            return self::matchTarget($lang . '-' . $parts[1]);
+        }
+        if ($count === 2 && self::isRegion($parts[1])) {
+            return self::matchTarget($lang);
+        }
+
+        return null;
+    }
+
+    /** What a settings screen preselects for a CMS language: the exact match, else the default, else null. */
+    public static function suggestTarget(string $code): ?string
+    {
+        return self::matchTarget($code) ?? self::defaultTarget($code);
+    }
+
+    /**
+     * The targets sorted by English name, for the language combo box. Show the name localized where the
+     * platform can (e.g. Symfony Intl's Languages/Locales, PHP's Locale::getDisplayName) and the code next to it.
+     *
+     * @return list<array{code: string, name: string, politeness: bool}>
+     */
+    public static function targetOptions(): array
+    {
+        $options = self::TARGETS;
+        usort($options, static fn (array $a, array $b): int => strcmp($a['name'], $b['name']));
+
+        return $options;
     }
 
     /** The supported source for $code: exact match, else its first subtag ("en-US" → "en"), else null. */
@@ -123,15 +194,15 @@ final class Languages
 
     /**
      * The target code to send: the mapping's value (sent as it is, even if it isn't in the list), else an
-     * exact match.
+     * exact match, else the default (defaultTarget()).
      *
      * @param array<string, string> $mapping CMS language → Supertext code, e.g. ['de' => 'de-CH', 'no' => 'nb']
      *
-     * @throws SupertextException unsupported_language (with targetLang) when there is neither; nothing is sent
+     * @throws SupertextException unsupported_language (with targetLang) when there is none of them; nothing is sent
      */
     public static function target(string $code, array $mapping = []): string
     {
-        $result = self::mapped($code, $mapping) ?? self::matchTarget($code);
+        $result = self::mapped($code, $mapping) ?? self::matchTarget($code) ?? self::defaultTarget($code);
         if ($result === null) {
             $trimmed = trim($code);
             throw new SupertextException(SupertextException::UNSUPPORTED_LANGUAGE, targetLang: $trimmed !== '' ? $trimmed : null);
@@ -176,6 +247,11 @@ final class Languages
     public static function isSupportedSource(string $code): bool
     {
         return self::findSource(self::key($code)) !== null;
+    }
+
+    private static function isRegion(string $subtag): bool
+    {
+        return preg_match('/^(?:[a-z]{2}|[0-9]{3})$/', $subtag) === 1;
     }
 
     /** Case, "_" vs "-" and surrounding spaces don't matter when comparing codes. */

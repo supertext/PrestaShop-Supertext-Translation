@@ -9,3 +9,15 @@ supertext_translate_run:
   methods: [POST]
   defaults:
     _controller: 'Supertext\PrestaShop\Controller\Admin\TranslateController::runAction'
+
+supertext_export:
+  path: supertext/translate/export
+  methods: [POST]
+  defaults:
+    _controller: 'Supertext\PrestaShop\Controller\Admin\TranslateController::exportAction'
+
+supertext_import:
+  path: supertext/translate/import
+  methods: [POST]
+  defaults:
+    _controller: 'Supertext\PrestaShop\Controller\Admin\TranslateController::importAction'

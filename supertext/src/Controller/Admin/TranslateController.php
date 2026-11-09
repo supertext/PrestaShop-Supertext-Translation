@@ -11,9 +11,13 @@ namespace Supertext\PrestaShop\Controller\Admin;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use Supertext\PrestaShop\Api\Reporting;
 use Supertext\PrestaShop\Api\SupertextException;
+use Supertext\PrestaShop\Files\FileExchange;
+use Supertext\PrestaShop\Files\FileExchangeException;
+use Supertext\PrestaShop\Files\PrestaShopItemStore;
 use Supertext\PrestaShop\Settings;
 use Supertext\PrestaShop\Translation\EntityTranslator;
 use Supertext\PrestaShop\Translation\EntityTypes;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -93,6 +97,9 @@ class TranslateController extends FrameworkBundleAdminController
             'signupUrl'     => Settings::SIGNUP_URL,
             'apiKeyUrl'     => Settings::API_KEY_URL,
             'runUrl'        => $this->generateUrl('supertext_translate_run'),
+            'exportUrl'     => $this->generateUrl('supertext_export'),
+            'importUrl'     => $this->generateUrl('supertext_import'),
+            'maxUpload'     => FileExchange::MAX_UPLOAD_BYTES,
             'selfUrl'       => $this->generateUrl('supertext_translate', ['type' => $type, 'ids' => implode(',', $ids)]),
             'listUrl'       => \Context::getContext()->link->getAdminLink($definition['tab']),
             'enableSidebar' => false,
@@ -164,6 +171,134 @@ class TranslateController extends FrameworkBundleAdminController
         }
 
         return $this->json(['ok' => true, 'status' => $result['status'], 'message' => $message]);
+    }
+
+    /** POST type, id, source, targets[], format: downloads the item as an XLIFF or HTML file. */
+    public function exportAction(Request $request): Response
+    {
+        $type   = (string) $request->request->get('type');
+        $id     = (int) $request->request->get('id');
+        $source = (int) $request->request->get('source');
+        $back   = $this->generateUrl('supertext_translate', ['type' => $type, 'ids' => $id, 'source' => $source]);
+
+        if (!isset(EntityTypes::TYPES[$type]) || $id <= 0) {
+            throw $this->createNotFoundException();
+        }
+
+        if (!self::canEdit(EntityTypes::get($type)['tab'])) {
+            $this->addFlash('error', $this->t('You are not allowed to edit this item.'));
+
+            return $this->redirect($back);
+        }
+
+        $targets = EntityTypes::ids($request->request->all()['targets'] ?? []);
+        $format  = $request->request->get('format') === FileExchange::HTML ? FileExchange::HTML : FileExchange::XLIFF;
+
+        try {
+            $file = (new FileExchange(new PrestaShopItemStore((int) \Context::getContext()->shop->id)))->export($type, $id, $source, $targets, $format);
+        } catch (FileExchangeException $e) {
+            $this->addFlash('error', $this->fileError($e->errorCode, $e->parameters));
+
+            return $this->redirect($back);
+        }
+
+        return new Response($file['content'], 200, [
+            'Content-Type'           => $file['contentType'],
+            'Content-Disposition'    => 'attachment; filename="' . $file['name'] . '"',
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control'          => 'no-store',
+        ]);
+    }
+
+    /** POST file (multipart), include_changed, overwrite: imports a translated XLIFF or HTML file. */
+    public function importAction(Request $request): JsonResponse
+    {
+        $upload = $request->files->get('file');
+
+        if (!$upload instanceof UploadedFile) {
+            return $this->json(['ok' => false, 'message' => $this->fileError(FileExchangeException::INVALID_FILE, [])], 400);
+        }
+
+        try {
+            // Refused before anything is read; PHP's own upload limit counts as too large too.
+            if (\in_array($upload->getError(), [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
+                throw new FileExchangeException(FileExchangeException::TOO_LARGE);
+            }
+
+            if (!$upload->isValid()) {
+                throw new FileExchangeException(FileExchangeException::INVALID_FILE);
+            }
+
+            FileExchange::checkSize((int) $upload->getSize());
+
+            $content = (string) file_get_contents($upload->getPathname());
+            $results = (new FileExchange(new PrestaShopItemStore((int) \Context::getContext()->shop->id)))->import(
+                $content,
+                $request->request->getBoolean('include_changed'),
+                $request->request->getBoolean('overwrite'),
+                static fn (string $type): bool => self::canEdit(EntityTypes::get($type)['tab']),
+            );
+        } catch (FileExchangeException $e) {
+            return $this->json(['ok' => false, 'message' => $this->fileError($e->errorCode, $e->parameters)]);
+        } finally {
+            // Nothing is kept: PHP removes the temporary upload at the end of the request anyway.
+            if ($upload->isValid() && is_file($upload->getPathname())) {
+                @unlink($upload->getPathname());
+            }
+        }
+
+        $jobs = [];
+
+        foreach ($results as $result) {
+            $counts = $result['counts'];
+            $lines  = [];
+
+            if ($result['error'] === null) {
+                $lines[] = $this->t('Imported: %count%', ['%count%' => $counts['ok']]);
+
+                foreach ([
+                    'kept'         => $this->t('%count% kept', ['%count%' => $counts['kept']]),
+                    'changed'      => $this->t('Skipped, source changed since the export: %count%', ['%count%' => $counts['changed']]),
+                    'untranslated' => $this->t('Not translated in the file: %count%', ['%count%' => $counts['untranslated']]),
+                    'invalid'      => $this->t('Formatting changed, not imported: %count%', ['%count%' => $counts['invalid']]),
+                    'missing'      => $this->t('Not in the file: %count%', ['%count%' => $counts['missing']]),
+                ] as $key => $line) {
+                    if ($counts[$key] > 0) {
+                        $lines[] = $line;
+                    }
+                }
+            }
+
+            $jobs[] = [
+                'title'    => $result['title'],
+                'language' => $result['language'],
+                'error'    => $result['error'] !== null ? $this->fileError($result['error']['code'], $result['error']['parameters']) : null,
+                'lines'    => $lines,
+            ];
+        }
+
+        return $this->json(['ok' => true, 'jobs' => $jobs]);
+    }
+
+    /** @param array<string, string|int> $parameters */
+    private function fileError(string $code, array $parameters): string
+    {
+        if (str_starts_with($code, 'message:')) {
+            return $this->t(substr($code, 8), $parameters);
+        }
+
+        return match ($code) {
+            FileExchangeException::NOTHING           => $this->t('Nothing to translate.'),
+            FileExchangeException::NOT_FOUND         => $this->t('The item this file was exported from no longer exists.'),
+            FileExchangeException::NO_LANGUAGE       => $this->t('The shop has no language %language%.', $parameters),
+            FileExchangeException::HTML_ONE_LANGUAGE => $this->t('Choose one language for an HTML file, or one or more for XLIFF.'),
+            FileExchangeException::MISSING_METADATA  => $this->t('This file wasn\'t exported by the Supertext module, or its header was removed.'),
+            FileExchangeException::TOO_LARGE         => $this->t('The file is too large (at most 10 MB).'),
+            'other_system'                           => $this->t('This file belongs to another system (%plugin%).', $parameters),
+            'not_allowed'                            => $this->t('You are not allowed to edit this item.'),
+            'save_failed'                            => $this->t('The translation could not be saved: %error%', $parameters),
+            default                                  => $this->t('This file isn\'t a valid XLIFF or HTML translation file.'),
+        };
     }
 
     private static function canEdit(string $tab): bool

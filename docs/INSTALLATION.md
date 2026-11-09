@@ -14,7 +14,7 @@ A ready-to-run container with PrestaShop 9, English sample products, a category 
 | PHP | 8.1 or later (whatever your PrestaShop version needs), with `ext-dom` and `ext-curl` |
 | Shop setup | At least two languages (step 3) |
 | Supertext | An account with an API key, see [Get a Supertext account and API key](#get-a-supertext-account-and-api-key) |
-| Network | The web server must reach `https://api.supertext.com` over HTTPS |
+| Network | The web server must reach `https://api.supertext.com` over HTTPS (and, for [Translation review](#translation-review), Supertext's review service) |
 
 ## 1. Install the module
 
@@ -72,14 +72,44 @@ Each shop language needs a **Supertext language**. Supertext accepts exactly the
 | Swiss German | `gsw-u-sd-chzh` (Zurich), `gsw-u-sd-chbe` (Bern) |
 | All others, without region | `bg`, `cs`, `da`, `el`, `es`, `fi`, `hr`, `hu`, `ja`, `ko`, `nb`, `nl`, `pl`, `rm`, `ru`, `sk`, `sl`, `sq`, `sv`, `tr` |
 
-In the module settings' **Languages** panel, choose per shop language:
+In the module settings (*Modules → Module Manager → Supertext Translation → Configure*), the **Languages** panel has one row per shop language (all of them, including the default language, because the same choice is used when a language is the source) with:
 
-- the **Supertext language** from Supertext's list. A language whose **locale** already is one of these codes (apart from upper/lower case and `_`/`-`: `de-CH`, `fr-CH`, `es`) is preselected. Every other locale needs a choice: PrestaShop's `de`, `es-ES`, `nl-NL` or `zh-CN` aren't Supertext codes, and the module **never guesses** a region (whether `de` means Germany or Switzerland is your decision). A language without a Supertext language is marked *Not mapped*, can't be ticked on the *Translate with Supertext* page and nothing is sent for it. The same choice is used when the language is the source: only its language is sent (`de-CH` → `de`, `en-US` → `en`).
-- the **tone**: *Formal (Sie, vous)*, *Informal (du, tu)* or *Supertext default*. Supertext offers no formal/informal choice for English, Swiss German, Romansh, Albanian and Serbian; the panel warns when one of those is set to formal or informal, and translating would fail with *Supertext offers no formal or informal tone for this language*, so set them to *Supertext default*.
+- the **Supertext language**: a list of Supertext's codes, shown as name and code (*Deutsch (Schweiz) (de-CH)*, names in your back-office language). A language that has none saved yet gets a suggestion preselected:
+  - its **locale** when that already is one of these codes (apart from upper/lower case and `_`/`-`: `de-CH`, `fr-CH`, `es`);
+  - otherwise the usual code where one is obvious (the Supertext SDK's defaults, the same in every Supertext plugin):
 
-A code you saved before that isn't in the list (for example one Supertext added later) stays selected and is sent as it is.
+    | Shop locale | Suggested Supertext language |
+    | --- | --- |
+    | `de`, `en`, `fr`, `it`, `pt` | `de-DE`, `en-US`, `fr-FR`, `it-IT`, `pt-PT` |
+    | `zh`, `zh-CN`, `zh-SG` / `zh-TW`, `zh-HK`, `zh-MO` | `zh-Hans` / `zh-Hant` |
+    | `sr`, `sr-Latn-RS` | `sr-Latn` |
+    | A region of a language Supertext offers without region (`es-ES`, `es-MX`, `nl-NL`, `sl-SI`, `nb-NO`) | the bare code (`es`, `nl`, `sl`, `nb`) |
 
-<img src="images/module-languages.png" alt="Languages panel of the module settings: English, Deutsch (Schweiz), Français (Suisse) and Italiano (Svizzera) with their locales, an empty Supertext language code field each and the tone; German is set to Formal (Sie, vous)" width="720">
+  - nothing else is guessed: `en-IE`, `de-LI`, `fr-BE`, `sr-RS`, `gsw` or `no` show *— choose —* and the hint *No suggestion for this language*. Such a language can't be ticked on the *Translate with Supertext* page and nothing is sent for it until you choose its Supertext language.
+
+  **Save** to store the choices. A language you never saved uses its suggestion anyway, so a shop with `de-CH`, `fr-CH` and `de` translates without any setup; save once to fix the choice (for example `de` as `de-CH` instead of `de-DE`). When the language is the source, only its language is sent (`de-CH` → `de`, `en-US` → `en`). Saving accepts only codes from the list.
+- the **tone**: *Formal (Sie, vous)*, *Informal (du, tu)* or *Supertext default*. It is only shown when the chosen Supertext language offers it; English, Swiss German, Romansh, Albanian and Serbian have none (the panel says *Supertext offers no formal/informal choice for this language*, and a tone saved earlier for them isn't sent).
+- **Translation review**: on or off (off by default), see [Translation review](#translation-review).
+
+**Upgrading from 0.1.0**, where the Supertext language was a free-text field: saved codes are read as codes of the list (`de-ch` → `de-CH`, `de` → `de-DE`, which is what 0.1.0 sent, `es-ES` → `es`) and stored that way the next time the settings page is opened. A saved code the list doesn't know (for example one Supertext added later) stays selected and is sent as it is.
+
+<img src="images/module-languages.png" alt="Languages panel of the module settings: English, Deutsch (Schweiz), Français (Suisse) and Italiano (Svizzera) with their locales, their Supertext language and the tone; German is set to Formal (Sie, vous)" width="720">
+
+(The screenshot doesn't show the *Translation review* column yet.)
+
+### Translation review
+
+With **Translation review**, people check the translations on the shop's website itself and correct them there: customers or Supertext linguists open the original and the translated page side by side in Chrome with the *Supertext Localization Review* extension and fix texts in a side panel. Their corrections come back into PrestaShop.
+
+Turn it on per language in the module settings (*Modules → Module Manager → Supertext Translation → Configure → Languages*): tick **Translation review** in the row of the language that is translated **into** (e.g. *Deutsch (Schweiz)*) and **Save**. Untick it to turn it off again; nothing else changes.
+
+- Translations into that language then go through Supertext's review service instead of directly to Supertext. It answers exactly like Supertext and passes everything on with your API key, so billing, languages, tone and error messages stay the same.
+- The review service keeps every translation of your account. A text it has translated before gets the same translation again (without a new Supertext call), and once a reviewer has corrected it, the corrected text.
+- **Corrections arrive with the next translation:** after a review, translate the products, categories or pages into that language again (*Translate with Supertext*, with *Overwrite existing translations* ticked) to write the corrections into PrestaShop. As always, overwriting replaces manual changes in the translated fields.
+- Reviewers get a review link for your shop from Supertext; nothing to set up in PrestaShop.
+- The review service works with keys of the **live** Supertext API. With the *Staging* or *Testing* environment (or a custom API base URL), leave review off.
+- *Export for translation* and *Import translation* don't use the review service. The API key check (and *Test connection*) still goes directly to Supertext.
+- **Review service URL** in the *Supertext connection* panel is the review service's address; it defaults to Supertext's review service (`https://localizationreview-production.up.railway.app/v1/`). Only change it when Supertext gives you another address. Empty turns Translation review off for every language. The environment variable `SUPERTEXT_REVIEW_URL` wins over the field.
 
 ## 4. Check it works
 
@@ -97,6 +127,10 @@ Employees whose profile may **edit** the item: *Catalog → Products* for produc
 
 The **Translate with Supertext** button on the product page (*Modules* tab) is shown to profiles with **view** permission on the module. Installing the module grants it to every profile; you can change that under *Advanced Parameters → Team → Permissions → Modules*. Only SuperAdmins can configure the module.
 
+### Export for translation and import
+
+The *Export for translation* and *Import translation* boxes on the *Translate with Supertext* page need the same permission as translating: **edit** on the item's list (products, categories or pages); an import is refused for items the employee may not edit. They don't need an API key and have nothing to configure. Uploaded files are limited to **10 MB** (PHP's own `upload_max_filesize` and `post_max_size` must allow that much if you want the full limit); they are read in memory and never stored on the server.
+
 ## Interface languages
 
 The module's screens (settings page, *Translate with Supertext* page, list actions, product page box and messages) are available in English, German, French and Italian. They follow the employee's back-office language: each employee chooses it under *Your profile* (avatar at the top right → *Your profile* → *Language*). The translations ship with the module (`supertext/translations/<locale>/`) for de-DE, de-AT, de-CH, fr-FR, fr-BE, fr-CA, fr-CH, it-IT and it-CH; other locales show English. Wordings changed under *International → Translations* (*Installed modules translations*, module *Supertext Translation*) take precedence.
@@ -108,9 +142,10 @@ The module's screens (settings page, *Translate with Supertext* page, list actio
 | Supertext API key | – | Your key, with or without the `Supertext-Auth-Key` prefix. The `SUPERTEXT_API_KEY` environment variable wins. |
 | API environment | Live | `Live` (api.supertext.com), `Staging` or `Testing` Supertext API |
 | Custom API base URL | – | Overrides the environment (e.g. a test server). The `SUPERTEXT_API_ENDPOINT` environment variable wins. |
+| Review service URL | Supertext's review service | Address of the review service for languages with *Translation review* on (see [Translation review](#translation-review)). Empty turns review off for every language. The `SUPERTEXT_REVIEW_URL` environment variable wins. |
 | Timeout | 180 s | Maximum wait for one translation (30–1800 s) |
 | Send version information to Supertext | On | Sends the site URL and the versions of this module, PrestaShop and PHP to Supertext when you save the settings and after an update (see [below](#version-information-and-the-api-key-check)). The `SUPERTEXT_VERSION_REPORTS` environment variable wins (`0`, `false`, `off`, `no` or `1`, `true`, `on`, `yes`). |
-| Languages | – | Per shop language: its Supertext language (preselected when the locale is a Supertext code; otherwise required, see [Supertext language and tone](#supertext-language-and-tone)) and tone |
+| Languages | suggested per locale | Per shop language: its Supertext language (a list; the suggestion is preselected and used until you save another one, see [Supertext language and tone](#supertext-language-and-tone)), tone (only where Supertext offers one) and *Translation review* (off; see [Translation review](#translation-review)). Languages saved by an earlier version have review off. |
 
 Settings are global (the same for all shops of a multistore installation).
 
@@ -157,9 +192,11 @@ Upload the new zip in *Modules → Module Manager → Upload a module* (or repla
 | *The API key couldn't be checked: Supertext answered with an error (…)* | Usually temporary; run **Test connection** again later. If it stays, contact Supertext with the code shown. |
 | *You are not allowed to edit this item* | The employee's profile lacks *Edit* permission (see *Who can translate*). |
 | *The translation could not be saved: …* | PrestaShop rejected a translated value (e.g. a field it validates strictly). The message names the field; translate it by hand or report it to Supertext. |
-| *The language … has no Supertext language yet* / *Not mapped* in the Languages panel | The language's locale isn't a Supertext code (e.g. `de`, `es-ES`). Choose its Supertext language in the module settings (see [Supertext language and tone](#supertext-language-and-tone)). |
+| *The language … has no Supertext language* / *No suggestion for this language* in the Languages panel | The language's locale is neither a Supertext code nor one with an obvious default (e.g. `en-IE`, `de-LI`, `gsw`). Choose its Supertext language in *Configure → Languages* (see [Supertext language and tone](#supertext-language-and-tone)). |
 | *Supertext does not support this language pair (en → xx-YY)* | A saved Supertext language that Supertext doesn't offer, or the same language as the source. Choose another one from the list; the message shows the codes that were sent. |
-| *Supertext offers no formal or informal tone for this language* | The language's tone is *Formal* or *Informal*, but Supertext doesn't offer that for it (English, Swiss German, Romansh, Albanian, Serbian). Set it to *Supertext default*. |
+| *Supertext offers no formal or informal tone for this language* | The language's tone is *Formal* or *Informal*, but Supertext doesn't offer that for its Supertext language. The module only sends a tone where Supertext's list offers one, so this only happens with a code that isn't in the list; set the tone to *Supertext default*. |
+| *Authentication failed* only for languages with *Translation review* | The review service only works with keys of the live Supertext API: with the *Staging* or *Testing* environment (or a custom API base URL) leave review off. |
+| Reviewers' corrections don't show up in PrestaShop | They arrive with the next translation: translate the items into that language again with *Overwrite existing translations*. Check that the language's *Translation review* is ticked and that *Review service URL* isn't empty. |
 | *Too many requests to Supertext* | Supertext's per-second limit was still exceeded after 4 automatic retries. Wait a moment and translate again. |
 | *Your Supertext translation limit is exceeded* | Your Supertext plan's volume is used up. |
 | *Timed out waiting* | Very long descriptions: raise the *Timeout* (and PHP's `max_execution_time`). |
@@ -171,5 +208,7 @@ Failed translations are also written to *Advanced Parameters → Logs*.
 
 ## Security notes
 
+- Imported translation files are treated as untrusted input: at most 10 MB, no DTDs or entities, and the formatting written back can only be the formatting of the current source text (the Supertext SDK checks every segment).
+
 - Prefer the `SUPERTEXT_API_KEY` environment variable on servers: the key then never sits in the database or its backups.
-- The module only talks to the Supertext API you configured. Documents are deleted from Supertext right after download (and expire after 24 hours anyway).
+- The module only talks to the Supertext API you configured (and, for languages with *Translation review* on, the review service). Documents are deleted from Supertext right after download (and expire after 24 hours anyway).

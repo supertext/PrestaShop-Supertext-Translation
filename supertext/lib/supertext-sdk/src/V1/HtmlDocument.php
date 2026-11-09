@@ -89,6 +89,41 @@ final class HtmlDocument
     }
 
     /**
+     * The trimmed inner HTML of the first element with each wanted data-st-id, read exactly as parse()
+     * reads HTML segments (translation files: positions come from the file, so no list is allocated).
+     *
+     * @internal
+     *
+     * @param array<int, true> $positions the wanted data-st-id values as keys
+     *
+     * @return array<int, string> position => inner HTML, for the positions found
+     */
+    public static function htmlSegments(string $html, array $positions): array
+    {
+        $out = [];
+        $offset = 0;
+
+        while (preg_match(self::START, $html, $m, PREG_OFFSET_CAPTURE, $offset) === 1) {
+            $tag = $m[1][0];
+            $id = (int) self::firstNonEmpty($m[2][0] ?? '', $m[3][0] ?? '', $m[4][0] ?? '');
+            $contentStart = $m[0][1] + \strlen($m[0][0]);
+
+            [$end, $after] = self::findClose($html, $tag, $contentStart);
+            if ($end < 0) {
+                $offset = $contentStart;
+                continue;
+            }
+
+            if (isset($positions[$id]) && !isset($out[$id])) {
+                $out[$id] = trim(substr($html, $contentStart, $end - $contentStart), self::WHITESPACE);
+            }
+            $offset = $after;
+        }
+
+        return $out;
+    }
+
+    /**
      * Plain text from a translated fragment: line breaks from `<br>`, other tags removed, whitespace
      * collapsed, entities decoded.
      */
@@ -127,8 +162,12 @@ final class HtmlDocument
         return [-1, -1];
     }
 
-    /** Decodes the entities Supertext may produce; unknown named entities are left as they are. */
-    private static function decode(string $text): string
+    /**
+     * Decodes the entities Supertext may produce; unknown named entities are left as they are.
+     *
+     * @internal
+     */
+    public static function decode(string $text): string
     {
         return (string) preg_replace_callback(
             '/&(#[xX][0-9a-fA-F]+|#[0-9]+|amp|lt|gt|quot|apos|nbsp);/',

@@ -8,6 +8,7 @@
 
 namespace Supertext\PrestaShop\Translation;
 
+use Supertext\PrestaShop\Api\LanguageCodes;
 use Supertext\PrestaShop\Api\SupertextClient;
 use Supertext\PrestaShop\Api\SupertextException;
 use Supertext\PrestaShop\Settings;
@@ -36,42 +37,55 @@ final class EntityTranslator
     public function translate(string $type, int $id, \Language $source, \Language $target, bool $overwrite, ?int $idShop = null): array
     {
         $definition = EntityTypes::get($type);
-        $object     = self::load($definition['class'], $id, $idShop);
+        $sourceId   = (int) $source->id;
+        $targetId   = (int) $target->id;
+        $item       = self::fields($type, $id, $sourceId, $targetId, $idShop);
 
-        if (!\Validate::isLoadedObject($object)) {
+        if ($item === null) {
             throw new SupertextException('%type% %id% does not exist.', ['%type%' => $definition['class'], '%id%' => $id]);
         }
 
-        $sourceId = (int) $source->id;
-        $targetId = (int) $target->id;
-        $fields   = [];
-        $src      = [];
-        $tgt      = [];
-
-        foreach ($definition['fields'] as $field => $options) {
-            $fields[$field] = ['html' => $options['html'], 'size' => (int) ($definition['class']::$definition['fields'][$field]['size'] ?? 0)];
-            $src[$field]    = (string) ($object->{$field}[$sourceId] ?? '');
-            $tgt[$field]    = (string) ($object->{$field}[$targetId] ?? '');
-        }
-
-        $planner = new FieldPlanner($fields, $src, $tgt, $overwrite);
-        $title   = (string) ($object->{$definition['label']}[$sourceId] ?? '');
+        $object  = $item['object'];
+        $planner = new FieldPlanner($item['fields'], $item['source'], $item['target'], $overwrite);
+        $title   = $item['title'];
 
         if ($planner->toTranslate() === []) {
             return ['status' => 'unchanged', 'title' => $title, 'translated' => [], 'kept' => $planner->kept()];
         }
 
-        $translatedHtml = $this->client->translateDocument(
+        $targetCode = Settings::targetCode($target);
+
+        // Languages with *Translation review* on go through the review service (same protocol).
+        $translatedHtml = $this->client->forReview(Settings::review($targetId))->translateDocument(
             $planner->document(),
-            Settings::targetCode($target),
+            $targetCode,
             Settings::sourceCode($source),
-            Settings::tone($targetId),
+            // A tone saved for a language whose Supertext language offers none (e.g. en-US) isn't sent.
+            LanguageCodes::supportsPoliteness($targetCode) === false ? 'default' : Settings::tone($targetId),
         );
 
         $values = $planner->apply($translatedHtml);
 
+        self::write($object, $definition, $sourceId, $targetId, $values, $planner->shouldRewriteSlug(...));
+
+        return ['status' => 'translated', 'title' => $title, 'translated' => array_keys($values), 'kept' => $planner->kept()];
+    }
+
+    /**
+     * Writes translated values into an item's target language and saves it: single-line fields
+     * sanitized for PrestaShop's validators, the URL slug following a translated name, validated.
+     * Used for API translations and imported translation files alike.
+     *
+     * @param array<string, mixed>          $definition  EntityTypes entry
+     * @param array<string, string>         $values      field => text
+     * @param callable(string, string):bool $rewriteSlug (source slug, target slug) => whether the slug follows the name
+     *
+     * @throws SupertextException when it can't be saved
+     */
+    public static function write(\ObjectModel $object, array $definition, int $sourceId, int $targetId, array $values, callable $rewriteSlug): void
+    {
         foreach ($values as $field => $value) {
-            if (!$fields[$field]['html']) {
+            if (!$definition['fields'][$field]['html']) {
                 $value = self::sanitizeLine($value, (string) ($definition['class']::$definition['fields'][$field]['validate'] ?? ''));
             }
 
@@ -84,7 +98,7 @@ final class EntityTranslator
             $sourceSlug = (string) ($object->{$slugField}[$sourceId] ?? '');
             $targetSlug = (string) ($object->{$slugField}[$targetId] ?? '');
 
-            if ($planner->shouldRewriteSlug($sourceSlug, $targetSlug)) {
+            if ($rewriteSlug($sourceSlug, $targetSlug)) {
                 $slug = \Tools::str2url((string) $object->{$slugFrom}[$targetId]);
 
                 if ($slug !== '') {
@@ -102,8 +116,33 @@ final class EntityTranslator
         if (!$object->update()) {
             throw new SupertextException('The translation could not be saved.');
         }
+    }
 
-        return ['status' => 'translated', 'title' => $title, 'translated' => array_keys($values), 'kept' => $planner->kept()];
+    /**
+     * An item's translatable fields (with their sizes) and its texts in two languages, or null.
+     *
+     * @return array{object: \ObjectModel, title: string, fields: array<string, array{html: bool, size: int}>, source: array<string, string>, target: array<string, string>}|null
+     */
+    public static function fields(string $type, int $id, int $sourceId, int $targetId, ?int $idShop = null): ?array
+    {
+        $definition = EntityTypes::get($type);
+        $object     = self::load($definition['class'], $id, $idShop);
+
+        if (!\Validate::isLoadedObject($object)) {
+            return null;
+        }
+
+        $fields = [];
+        $src    = [];
+        $tgt    = [];
+
+        foreach ($definition['fields'] as $field => $options) {
+            $fields[$field] = ['html' => $options['html'], 'size' => (int) ($definition['class']::$definition['fields'][$field]['size'] ?? 0)];
+            $src[$field]    = (string) ($object->{$field}[$sourceId] ?? '');
+            $tgt[$field]    = (string) ($object->{$field}[$targetId] ?? '');
+        }
+
+        return ['object' => $object, 'title' => (string) ($object->{$definition['label']}[$sourceId] ?? ''), 'fields' => $fields, 'source' => $src, 'target' => $tgt];
     }
 
     /** The admin URL that opens the item for editing. */

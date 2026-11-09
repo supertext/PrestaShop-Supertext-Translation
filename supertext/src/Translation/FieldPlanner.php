@@ -8,6 +8,7 @@
 
 namespace Supertext\PrestaShop\Translation;
 
+use Supertext\PrestaShop\Sdk\Files\FileSegment;
 use Supertext\PrestaShop\Sdk\V1\HtmlDocument;
 use Supertext\PrestaShop\Sdk\V1\Segment;
 
@@ -114,6 +115,23 @@ final class FieldPlanner
     }
 
     /**
+     * The fields to send as translation file segments (XLIFF/HTML export and import), keyed by
+     * field name, in the order of toTranslate().
+     *
+     * @return list<FileSegment>
+     */
+    public function fileSegments(): array
+    {
+        $segments = [];
+
+        foreach ($this->toTranslate() as $field) {
+            $segments[] = new FileSegment($field, (string) $this->source[$field], $this->fields[$field]['html']);
+        }
+
+        return $segments;
+    }
+
+    /**
      * Maps the translated document back to field values, trimmed to each field's size.
      *
      * @return array<string, string> field => translated text
@@ -125,7 +143,26 @@ final class FieldPlanner
         $values = [];
 
         foreach ($send as $i => $field) {
-            $text = $parsed[$i] ?? '';
+            $values[$field] = $parsed[$i] ?? '';
+        }
+
+        return $this->fit($values);
+    }
+
+    /**
+     * The translated values this planner writes: only fields in toTranslate() (so existing
+     * translations are kept unless $overwrite), without blank ones, trimmed to each field's size.
+     *
+     * @param array<string, string> $values field => translated text
+     *
+     * @return array<string, string>
+     */
+    public function fit(array $values): array
+    {
+        $out = [];
+
+        foreach ($this->toTranslate() as $field) {
+            $text = $values[$field] ?? '';
 
             if (trim($text) === '') {
                 continue;
@@ -137,10 +174,10 @@ final class FieldPlanner
                 $text = rtrim(mb_substr($text, 0, $size));
             }
 
-            $values[$field] = $text;
+            $out[$field] = $text;
         }
 
-        return $values;
+        return $out;
     }
 
     /**

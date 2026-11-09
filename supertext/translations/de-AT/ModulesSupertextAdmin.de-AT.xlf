@@ -2,9 +2,9 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="modules/supertext" source-language="en-US" target-language="de-AT" datatype="plaintext">
     <body>
-      <trans-unit id="8343ca5708115389a1b9e5c69969f5b2">
-        <source>"%code%" is not a valid language code. Use a code such as de-CH or fr.</source>
-        <target>«%code%» ist kein gültiger Sprachcode. Verwenden Sie einen Code wie de-CH oder fr.</target>
+      <trans-unit id="0523bf7f5b870f556f4b7486d57ca55f">
+        <source>"%code%" is not a Supertext language. Choose one from the list.</source>
+        <target>«%code%» ist keine Supertext-Sprache. Wählen Sie eine aus der Liste.</target>
       </trans-unit>
       <trans-unit id="9f3e73f7789915d01e02679c1826dce5">
         <source>%count% kept</source>
@@ -30,9 +30,17 @@
         <source>API key checked: the connection to Supertext works.</source>
         <target>API-Schlüssel geprüft: Die Verbindung zu Supertext funktioniert.</target>
       </trans-unit>
+      <trans-unit id="b2b202e135f0772f82251fe4472d4a12">
+        <source>Address of Supertext's review service for languages with Translation review on. Only change it when Supertext gives you another address. Empty: Translation review is off for every language.</source>
+        <target>Adresse des Prüfdienstes von Supertext für Sprachen mit eingeschalteter Übersetzungsprüfung. Ändern Sie sie nur, wenn Supertext Ihnen eine andere Adresse nennt. Leer: Die Übersetzungsprüfung ist für alle Sprachen ausgeschaltet.</target>
+      </trans-unit>
       <trans-unit id="2c9f0fde2325cd6ef9a5c11e70837752">
         <source>Already translated, unchanged</source>
         <target>Bereits übersetzt, unverändert</target>
+      </trans-unit>
+      <trans-unit id="27666d582286188590f9ff31936afdfb">
+        <source>Also import texts whose source changed since the export</source>
+        <target>Auch Texte importieren, deren Ausgangstext sich seit dem Export geändert hat</target>
       </trans-unit>
       <trans-unit id="43fe6e3f77d63c9284dd2d1a614d5b6f">
         <source>An administrator needs to enter the API key in the %link%module settings%end%.</source>
@@ -62,9 +70,13 @@
         <source>Choose at least one language to translate into.</source>
         <target>Wählen Sie mindestens eine Sprache, in die übersetzt werden soll.</target>
       </trans-unit>
-      <trans-unit id="1dd1623a2915cf9b29cc98cc39d11b63">
-        <source>Choose the Supertext language for each shop language. A locale that is a Supertext language (e.g. de-CH, es) is preselected; other locales (e.g. de, es-ES) need a choice, otherwise that language isn't translated.</source>
-        <target>Wählen Sie für jede Shop-Sprache die Supertext-Sprache. Ein Gebietsschema, das eine Supertext-Sprache ist (z. B. de-CH, es), ist vorausgewählt; andere Gebietsschemas (z. B. de, es-ES) brauchen eine Auswahl, sonst wird diese Sprache nicht übersetzt.</target>
+      <trans-unit id="ef91ac851f05d37bf1bdf6936583376a">
+        <source>Choose one language for an HTML file, or one or more for XLIFF.</source>
+        <target>Wählen Sie für eine HTML-Datei eine Sprache, für XLIFF eine oder mehrere.</target>
+      </trans-unit>
+      <trans-unit id="7a595845db69d4a154abe1434e737570">
+        <source>Choose the Supertext language for each shop language. The suggested one is preselected: the same code (e.g. de-CH, es), else the usual one (de → de-DE, es-ES → es, zh-CN → zh-Hans). Languages without a suggestion (e.g. en-IE, de-LI) need a choice, otherwise they aren't translated. Save to keep the choices.</source>
+        <target>Wählen Sie für jede Shop-Sprache die Supertext-Sprache. Die vorgeschlagene ist vorausgewählt: derselbe Code (z. B. de-CH, es), sonst der übliche (de → de-DE, es-ES → es, zh-CN → zh-Hans). Sprachen ohne Vorschlag (z. B. en-IE, de-LI) brauchen eine Auswahl, sonst werden sie nicht übersetzt. Speichern Sie, um die Auswahl zu übernehmen.</target>
       </trans-unit>
       <trans-unit id="f2ddf2d5009d9038a211ae1863b58a9d">
         <source>Could not reach Supertext: %error%</source>
@@ -86,6 +98,14 @@
         <source>Done: %ok% translated, %skipped% unchanged, %failed% failed.</source>
         <target>Fertig: %ok% übersetzt, %skipped% unverändert, %failed% fehlgeschlagen.</target>
       </trans-unit>
+      <trans-unit id="d5ef96e383d376beeec28da7acfea516">
+        <source>Download file</source>
+        <target>Datei herunterladen</target>
+      </trans-unit>
+      <trans-unit id="cf7fd76c9aca654b3b06a6a82d3a9e93">
+        <source>Export for translation</source>
+        <target>Für Übersetzung exportieren</target>
+      </trans-unit>
       <trans-unit id="d7c8c85bf79bbe1b7188497c32c3b0ca">
         <source>Failed</source>
         <target>Fehlgeschlagen</target>
@@ -94,17 +114,37 @@
         <source>Fields that are already translated will be replaced by the new Supertext translation. Changes made by hand in those languages are lost.</source>
         <target>Bereits übersetzte Felder werden durch die neue Supertext-Übersetzung ersetzt. Manuelle Änderungen in diesen Sprachen gehen verloren.</target>
       </trans-unit>
+      <trans-unit id="1bd7f72decec9fb5b51a58447b152d38">
+        <source>File format</source>
+        <target>Dateiformat</target>
+      </trans-unit>
       <trans-unit id="18af4753494466a69d1eda0b1db2e615">
         <source>Formal (Sie, vous)</source>
         <target>Formell (Sie, vous)</target>
+      </trans-unit>
+      <trans-unit id="033bca68e615f3c7dd07404ce66e0584">
+        <source>Formatting changed, not imported: %count%</source>
+        <target>Formatierung verändert, nicht importiert: %count%</target>
       </trans-unit>
       <trans-unit id="1e910644235517d3701fe660eaabc404">
         <source>Generate your API key at</source>
         <target>Erzeugen Sie Ihren API-Schlüssel unter</target>
       </trans-unit>
+      <trans-unit id="509149827f3ae819ecd1850c68c000bf">
+        <source>HTML (one language per file)</source>
+        <target>HTML (eine Sprache pro Datei)</target>
+      </trans-unit>
       <trans-unit id="9e8cc5c6623ed5bee86d4ef0670060cd">
         <source>How to translate</source>
         <target>So übersetzen Sie</target>
+      </trans-unit>
+      <trans-unit id="2ee85605fee502f1e8c0f1855e706338">
+        <source>Import translation</source>
+        <target>Übersetzung importieren</target>
+      </trans-unit>
+      <trans-unit id="2459d5dccffc9de218f3c92b23472b13">
+        <source>Imported: %count%</source>
+        <target>Importiert: %count%</target>
       </trans-unit>
       <trans-unit id="ac2c6e1b03e3323781446b7ffe5a4f0f">
         <source>In Catalog → Products, Catalog → Categories or Design → Pages, tick the items and choose Translate with Supertext in the bulk actions, or use the action in the menu of a row. On a product page, the Modules tab has the same button.</source>
@@ -174,25 +214,33 @@
         <source>No Supertext language yet: an administrator needs to choose one in the module settings.</source>
         <target>Noch keine Supertext-Sprache: Ein Administrator muss sie in den Moduleinstellungen wählen.</target>
       </trans-unit>
+      <trans-unit id="f7e28b70a0cff6b9ddf2d27c346108b1">
+        <source>No suggestion for this language: choose a Supertext language, otherwise it isn't translated.</source>
+        <target>Kein Vorschlag für diese Sprache: Wählen Sie eine Supertext-Sprache, sonst wird sie nicht übersetzt.</target>
+      </trans-unit>
       <trans-unit id="e60304f10775d8e6769660f6e20e7744">
         <source>Not checked yet. It is checked when you save these settings or test the connection.</source>
         <target>Noch nicht geprüft. Der Schlüssel wird geprüft, wenn Sie diese Einstellungen speichern oder die Verbindung testen.</target>
       </trans-unit>
-      <trans-unit id="7f7d2ea8e94639ce639ba271c1a3196e">
-        <source>Not mapped</source>
-        <target>Nicht zugeordnet</target>
-      </trans-unit>
-      <trans-unit id="20028685df3eebd14f6908235b9852f0">
-        <source>Not mapped: choose a Supertext language, or this language isn't translated.</source>
-        <target>Nicht zugeordnet: Wählen Sie eine Supertext-Sprache, sonst wird diese Sprache nicht übersetzt.</target>
+      <trans-unit id="427b72c5878746781de937ccf72c4d5b">
+        <source>Not in the file: %count%</source>
+        <target>Nicht in der Datei: %count%</target>
       </trans-unit>
       <trans-unit id="908c0345c3cc55c54abc25a083f7ce50">
         <source>Not translated</source>
         <target>Nicht übersetzt</target>
       </trans-unit>
+      <trans-unit id="059b94b13487232a1fc69d829e2a3deb">
+        <source>Not translated in the file: %count%</source>
+        <target>In der Datei nicht übersetzt: %count%</target>
+      </trans-unit>
       <trans-unit id="79e10eaff382ab1b8a6f684cfbbcaad4">
         <source>Nothing selected. Go back to the list and tick the items to translate.</source>
         <target>Nichts ausgewählt. Kehren Sie zur Liste zurück und markieren Sie die Einträge, die übersetzt werden sollen.</target>
+      </trans-unit>
+      <trans-unit id="0e983c0149d4fa5d372d342ea45723d2">
+        <source>Nothing to translate.</source>
+        <target>Nichts zu übersetzen.</target>
       </trans-unit>
       <trans-unit id="305855943686a357f7b930465bea6e96">
         <source>Optional. Overrides the environment, e.g. for a test server.</source>
@@ -226,6 +274,10 @@
         <source>Remove the saved key</source>
         <target>Gespeicherten Schlüssel entfernen</target>
       </trans-unit>
+      <trans-unit id="3d6fac4870ed403b5ee7841a7bcad1ff">
+        <source>Review service URL</source>
+        <target>URL des Prüfdienstes</target>
+      </trans-unit>
       <trans-unit id="c9cc8cce247e49bae79f15173ce97354">
         <source>Save</source>
         <target>Speichern</target>
@@ -257,6 +309,10 @@
       <trans-unit id="9a7e58ee13cb727cb7c4acc68f4cafe5">
         <source>Settings saved.</source>
         <target>Einstellungen gespeichert.</target>
+      </trans-unit>
+      <trans-unit id="a3f25c375032869044d8dcf30d1fb844">
+        <source>Skipped, source changed since the export: %count%</source>
+        <target>Übersprungen, Ausgangstext seit dem Export geändert: %count%</target>
       </trans-unit>
       <trans-unit id="1bee0d8aaede29ac319901e96850adee">
         <source>Staging</source>
@@ -310,9 +366,9 @@
         <source>Supertext offers no formal or informal tone for this language. Set its tone to "Supertext default" in the module settings.</source>
         <target>Supertext bietet für diese Sprache keine formelle oder informelle Anrede an. Stellen Sie ihre Tonalität in den Moduleinstellungen auf «Supertext-Standard».</target>
       </trans-unit>
-      <trans-unit id="cf289abb6f6ff214cb610dac3f82a477">
-        <source>Supertext offers no formal/informal choice for this language: choose "Supertext default".</source>
-        <target>Supertext bietet für diese Sprache keine formelle/informelle Anrede an: Wählen Sie «Supertext-Standard».</target>
+      <trans-unit id="dac9c5baa0bd8de5a5a2166920ef23ea">
+        <source>Supertext offers no formal/informal choice for this language.</source>
+        <target>Supertext bietet für diese Sprache keine formelle/informelle Anrede an.</target>
       </trans-unit>
       <trans-unit id="e75713efc45ecee5263a2ac9b80ef578">
         <source>Supertext rejected the API key. Check that you copied the whole key, or generate a new one at %apikey% (requires the Admin role). No Supertext account yet? Create one at %signup%.</source>
@@ -342,6 +398,10 @@
         <source>The SUPERTEXT_API_ENDPOINT environment variable is set and is used instead.</source>
         <target>Die Umgebungsvariable SUPERTEXT_API_ENDPOINT ist gesetzt und wird stattdessen verwendet.</target>
       </trans-unit>
+      <trans-unit id="35131b7f8d928b3df8cccfd9319203e4">
+        <source>The SUPERTEXT_REVIEW_URL environment variable is set and is used instead.</source>
+        <target>Die Umgebungsvariable SUPERTEXT_REVIEW_URL ist gesetzt und wird stattdessen verwendet.</target>
+      </trans-unit>
       <trans-unit id="41b4a228a6e45a5cf858819ea08dad68">
         <source>The SUPERTEXT_VERSION_REPORTS environment variable is set and turns it off.</source>
         <target>Die Umgebungsvariable SUPERTEXT_VERSION_REPORTS ist gesetzt und schaltet es aus.</target>
@@ -366,13 +426,33 @@
         <source>The document was deleted at Supertext before it could be downloaded.</source>
         <target>Das Dokument wurde bei Supertext gelöscht, bevor es heruntergeladen werden konnte.</target>
       </trans-unit>
-      <trans-unit id="3ec3c4c31f73fbb69ba382d5dfdfbb30">
-        <source>The language %language% has no Supertext language yet. Ask your administrator to map it in the module settings (Languages → Supertext language).</source>
-        <target>Die Sprache %language% ist noch keiner Supertext-Sprache zugeordnet. Bitten Sie Ihre Administratorin oder Ihren Administrator, sie in den Moduleinstellungen zuzuordnen (Sprachen → Supertext-Sprache).</target>
+      <trans-unit id="97436cf1157d007f25f9bfc3512c7275">
+        <source>The file is too large (at most 10 MB).</source>
+        <target>Die Datei ist zu groß (höchstens 10 MB).</target>
+      </trans-unit>
+      <trans-unit id="5488eba94b55bb01025d1e5f1a8ba0e9">
+        <source>The item this file was exported from no longer exists.</source>
+        <target>Der Eintrag, aus dem diese Datei exportiert wurde, existiert nicht mehr.</target>
+      </trans-unit>
+      <trans-unit id="bab7b7aab3a26e8113609e4670504d9a">
+        <source>The language %language% has no Supertext language. Ask your administrator to choose one in Modules → Module Manager → Supertext Translation → Configure → Languages (list Supertext language).</source>
+        <target>Die Sprache %language% ist keiner Supertext-Sprache zugeordnet. Bitten Sie Ihre Administratorin oder Ihren Administrator, unter Module → Modul-Manager → Supertext Translation → Konfigurieren → Sprachen eine auszuwählen (Liste «Supertext-Sprache»).</target>
       </trans-unit>
       <trans-unit id="4a3a68713ce55d74de42b709c5df01e8">
         <source>The requested Supertext resource was not found.</source>
         <target>Die angeforderte Supertext-Ressource wurde nicht gefunden.</target>
+      </trans-unit>
+      <trans-unit id="2ab1d1117b49d8b450e2ba945bff274f">
+        <source>The review service URL is empty, so Translation review is off for every language.</source>
+        <target>Die URL des Prüfdienstes ist leer, daher ist die Übersetzungsprüfung für alle Sprachen ausgeschaltet.</target>
+      </trans-unit>
+      <trans-unit id="d1d28e97075aa1849574a401a797e226">
+        <source>The review service URL must start with https://.</source>
+        <target>Die URL des Prüfdienstes muss mit https:// beginnen.</target>
+      </trans-unit>
+      <trans-unit id="2c4a53346eab30c4999f4fe4b97ad76c">
+        <source>The shop has no language %language%.</source>
+        <target>Der Shop hat keine Sprache %language%.</target>
       </trans-unit>
       <trans-unit id="60f1677ccd81b3c7e978f009065bfff1">
         <source>The translated document was empty.</source>
@@ -385,6 +465,18 @@
       <trans-unit id="2dd5027e62c108691100a742d4441102">
         <source>The translation could not be saved: %error%</source>
         <target>Die Übersetzung konnte nicht gespeichert werden: %error%</target>
+      </trans-unit>
+      <trans-unit id="c3fb9befcfaafd3b098a9c0cbe2f2fac">
+        <source>This file belongs to another system (%plugin%).</source>
+        <target>Diese Datei gehört zu einem anderen System (%plugin%).</target>
+      </trans-unit>
+      <trans-unit id="5a1c64ddf49ce3706d1ddc339f0933c8">
+        <source>This file isn't a valid XLIFF or HTML translation file.</source>
+        <target>Diese Datei ist keine gültige XLIFF- oder HTML-Übersetzungsdatei.</target>
+      </trans-unit>
+      <trans-unit id="cc3351d7fc7342846f2b3be0ba5690af">
+        <source>This file wasn't exported by the Supertext module, or its header was removed.</source>
+        <target>Diese Datei wurde nicht vom Supertext-Modul exportiert, oder ihr Kopfbereich wurde entfernt.</target>
       </trans-unit>
       <trans-unit id="da058916eef81b86527a4580a5498633">
         <source>Timed out waiting for the Supertext translation.</source>
@@ -422,6 +514,10 @@
         <source>Translate products, categories and CMS pages into your other shop languages with Supertext AI.</source>
         <target>Übersetzen Sie Artikel, Kategorien und CMS-Seiten mit Supertext AI in die anderen Sprachen Ihres Shops.</target>
       </trans-unit>
+      <trans-unit id="221344d388d1d3871e65a9975cb5163e">
+        <source>Translate the file in a translation tool, by a translator or in Supertext's web app, then import it here.</source>
+        <target>Lassen Sie die Datei in einem Übersetzungstool, von einer Übersetzerin oder einem Übersetzer oder in der Web-App von Supertext übersetzen und importieren Sie sie dann hier.</target>
+      </trans-unit>
       <trans-unit id="2c1b8be74ebc3d080d1e13ec540d8152">
         <source>Translate this product into your other shop languages: name, descriptions, SEO fields and delivery texts.</source>
         <target>Übersetzen Sie diesen Artikel in die anderen Sprachen Ihres Shops: Name, Beschreibungen, SEO-Felder und Liefertexte.</target>
@@ -438,9 +534,21 @@
         <source>Translated (%count% fields)</source>
         <target>Übersetzt (%count% Felder)</target>
       </trans-unit>
+      <trans-unit id="85b65277205a8e20a982ac9b7aa337e6">
+        <source>Translated file (XLIFF or HTML)</source>
+        <target>Übersetzte Datei (XLIFF oder HTML)</target>
+      </trans-unit>
       <trans-unit id="1f27de6aa0cdb38aade4d63a52b5ab30">
         <source>Translating…</source>
         <target>Wird übersetzt …</target>
+      </trans-unit>
+      <trans-unit id="43c3d9994d21dfe450ad4c6739490cbf">
+        <source>Translation review</source>
+        <target>Übersetzungsprüfung</target>
+      </trans-unit>
+      <trans-unit id="de300b4fa11417b793ca858d771ad614">
+        <source>Translation review: translations into a language with this box ticked go through Supertext's review service, so reviewers can check and correct them on your shop's website with the Supertext Localization Review extension. Their corrections are used the next time the item is translated.</source>
+        <target>Übersetzungsprüfung: Übersetzungen in eine Sprache mit angekreuztem Kästchen laufen über den Prüfdienst von Supertext, damit Prüferinnen und Prüfer sie mit der Erweiterung Supertext Localization Review direkt auf der Website Ihres Shops kontrollieren und korrigieren können. Ihre Korrekturen werden beim nächsten Übersetzen des Artikels, der Kategorie oder der Seite übernommen.</target>
       </trans-unit>
       <trans-unit id="9c0229a92cbba3c2186662317d8b28bc">
         <source>User guide</source>
@@ -458,6 +566,10 @@
         <source>Without this option, only fields that are empty or still identical to the source language are filled.</source>
         <target>Ohne diese Option werden nur Felder gefüllt, die leer oder noch identisch mit der Ausgangssprache sind.</target>
       </trans-unit>
+      <trans-unit id="eb5e21fc5cf02c25cf22446916d1380d">
+        <source>XLIFF 1.2 (for translation tools)</source>
+        <target>XLIFF 1.2 (für Übersetzungstools)</target>
+      </trans-unit>
       <trans-unit id="f5e1d38369cfb8db8c9e7384a8aa5f6c">
         <source>You are not allowed to edit this item.</source>
         <target>Sie dürfen diesen Eintrag nicht bearbeiten.</target>
@@ -465,6 +577,10 @@
       <trans-unit id="aadb1500ad1bd7e877e396d13135ac56">
         <source>Your Supertext translation limit is exceeded. Please upgrade your subscription.</source>
         <target>Ihr Supertext-Übersetzungslimit ist überschritten. Bitte erweitern Sie Ihr Abonnement.</target>
+      </trans-unit>
+      <trans-unit id="ebd73ade48cb3e102d1dbbfbc0377c5f">
+        <source>choose</source>
+        <target>auswählen</target>
       </trans-unit>
     </body>
   </file>

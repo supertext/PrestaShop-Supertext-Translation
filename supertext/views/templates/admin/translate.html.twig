@@ -18,6 +18,10 @@
   .supertext-page .st-overwrite:checked ~ .st-overwrite-warning { display: block; }
   .supertext-page .st-summary { display: none; }
   .supertext-page th.st-lang, .supertext-page td.st-lang-cell { min-width: 9rem; }
+  .supertext-page .st-files { margin-top: 1.5rem; }
+  .supertext-page .st-files label { font-weight: normal; margin-right: 1.5rem; }
+  .supertext-page .st-import-result { display: none; margin-top: 1rem; }
+  .supertext-page .st-import-result ul { margin: .25rem 0 .75rem 1.25rem; padding: 0; }
 </style>
 
 <div class="supertext-page" data-run-url="{{ runUrl }}" data-type="{{ type }}" data-source="{{ source.id }}">
@@ -120,9 +124,100 @@
       {% endif %}
     </div>
   </div>
+  {% if canEdit %}
+  <div class="row st-files">
+    {% if items is not empty %}
+    <div class="col-lg-6">
+      <form class="card st-export" method="post" action="{{ exportUrl }}">
+        <h3 class="card-header"><i class="material-icons">file_download</i> {{ 'Export for translation'|trans({}, d) }}</h3>
+        <div class="card-body">
+          <p class="small text-muted">{{ 'Translate the file in a translation tool, by a translator or in Supertext\'s web app, then import it here.'|trans({}, d) }}</p>
+          <input type="hidden" name="type" value="{{ type }}">
+          <input type="hidden" name="source" value="{{ source.id }}">
+          <div class="form-group">
+            <label class="d-block" for="st-export-item"><strong>{{ 'Name'|trans({}, d) }} ({{ source.name }})</strong></label>
+            <select id="st-export-item" name="id" class="custom-select">
+              {% for item in items %}<option value="{{ item.id }}">{{ item.title }} (#{{ item.id }})</option>{% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <strong class="d-block">{{ 'File format'|trans({}, d) }}</strong>
+            <label><input type="radio" name="format" value="xliff" checked> {{ 'XLIFF 1.2 (for translation tools)'|trans({}, d) }}</label>
+            <label><input type="radio" name="format" value="html"> {{ 'HTML (one language per file)'|trans({}, d) }}</label>
+          </div>
+          <div class="form-group mb-0">
+            <strong class="d-block">{{ 'Translate into'|trans({}, d) }}</strong>
+            {% for language in targets %}
+              <label><input type="checkbox" class="st-export-target" name="targets[]" value="{{ language.id }}"{% if loop.first %} checked{% endif %}> {{ language.name }}</label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="card-footer text-right">
+          <button type="submit" class="btn btn-outline-primary st-export-go"><i class="material-icons">file_download</i> {{ 'Download file'|trans({}, d) }}</button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+    <div class="col-lg-6">
+      <form class="card st-import" method="post" action="{{ importUrl }}" enctype="multipart/form-data" onsubmit="return false">
+        <h3 class="card-header"><i class="material-icons">file_upload</i> {{ 'Import translation'|trans({}, d) }}</h3>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="d-block" for="st-import-file"><strong>{{ 'Translated file (XLIFF or HTML)'|trans({}, d) }}</strong></label>
+            <input type="file" id="st-import-file" name="file" class="form-control-file" accept=".xlf,.xliff,.html,.htm,application/x-xliff+xml,text/html">
+          </div>
+          <div><label><input type="checkbox" name="include_changed" value="1"> {{ 'Also import texts whose source changed since the export'|trans({}, d) }}</label></div>
+          <div><label><input type="checkbox" name="overwrite" value="1"> {{ 'Overwrite existing translations'|trans({}, d) }}</label></div>
+          <div class="st-import-result alert" role="status"></div>
+        </div>
+        <div class="card-footer text-right">
+          <button type="button" class="btn btn-outline-primary st-import-go"><i class="material-icons">file_upload</i> {{ 'Import translation'|trans({}, d) }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
 </div>
 
 <script>
+(function () {
+  var root = document.querySelector('.supertext-page');
+  var form = root && root.querySelector('.st-import');
+  if (form) {
+    var tooLarge = {{ 'The file is too large (at most 10 MB).'|trans({}, d)|json_encode|raw }};
+    var failed = {{ 'Failed'|trans({}, d)|json_encode|raw }};
+    var box = form.querySelector('.st-import-result');
+    var show = function (cls, nodes) {
+      box.className = 'st-import-result alert ' + cls; box.style.display = 'block';
+      box.textContent = ''; nodes.forEach(function (n) { box.appendChild(n); });
+    };
+    var text = function (tag, value) { var el = document.createElement(tag); el.textContent = value; return el; };
+    form.querySelector('.st-import-go').addEventListener('click', async function () {
+      var input = form.querySelector('input[type=file]');
+      if (!input.files.length) { input.focus(); return; }
+      if (input.files[0].size > {{ maxUpload }}) { show('alert-danger', [text('div', tooLarge)]); return; }
+      var button = this; button.disabled = true;
+      try {
+        var response = await fetch(form.getAttribute('action'), { method: 'POST', body: new FormData(form), credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        var data = await response.json();
+        if (!data.ok) { show('alert-danger', [text('div', data.message || failed)]); return; }
+        var nodes = [], bad = false;
+        data.jobs.forEach(function (job) {
+          nodes.push(text('strong', job.title + ' → ' + job.language));
+          var list = document.createElement('ul');
+          if (job.error) { bad = true; list.appendChild(text('li', job.error)); }
+          job.lines.forEach(function (line) { list.appendChild(text('li', line)); });
+          nodes.push(list);
+        });
+        show(bad ? 'alert-warning' : 'alert-success', nodes);
+      } catch (e) {
+        show('alert-danger', [text('div', failed + ' (' + e.message + ')')]);
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+})();
 (function () {
   var root = document.querySelector('.supertext-page');
   var go = root && root.querySelector('.st-go');

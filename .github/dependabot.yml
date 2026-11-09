@@ -5,6 +5,10 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    ignore:
+      # PHPUnit 11 and later need PHP 8.2+; the module supports PHP 8.1 (CI tests 8.1).
+      - dependency-name: "phpunit/phpunit"
+        versions: [">=11"]
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
