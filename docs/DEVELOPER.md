@@ -322,7 +322,7 @@ Dependabot opens weekly pull requests (minor and patch updates grouped). Major u
 
 `.github/workflows/dependabot-merge.yml` merges a minor or patch package update by itself once every other check on its pull request has passed (it waits up to 85 minutes and leaves the pull request alone if a check fails). GitHub Actions updates and majors stay for a person: the workflow's built-in token can't merge changes to workflow files, and a major needs a decision. Merges by the workflow don't start CI on `main`; the weekly health check looks at `main`.
 
-- `phpunit/phpunit` >=11: PHPUnit 11 and later need PHP 8.2+; the module supports PHP 8.1 (CI tests 8.1).
+- `phpunit/phpunit` >=11: PHPUnit 11 and later need PHP 8.2+; the module supports PHP 8.1 (CI tests 8.1). PHP 8.1 is past its end of life (31 Dec 2025), but PrestaShop 8.2, which still gets security fixes until PrestaShop 10 is released, runs only up to PHP 8.1, so the module keeps it until it drops PrestaShop 8.
 
 Remove a rule when the plugin's minimum version (PHP, CMS) moves up far enough.
 
