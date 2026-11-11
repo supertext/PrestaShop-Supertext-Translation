@@ -199,7 +199,7 @@ composer test        # PHPUnit: SDK wrapper, language codes, reporting, field pl
 
 CI (`.github/workflows/ci.yml`):
 
-- **unit** (PHP 8.1, 8.3, 8.4): lint, PHPUnit, `sh -n demo/entrypoint.sh`, `./build.sh`.
+- **unit** (PHP 8.1, 8.3, 8.4, 8.5): lint, PHPUnit, `sh -n demo/entrypoint.sh`, `./build.sh`.
 - **phpstan**: PHPStan on the module's code with the PrestaShop 9 sources (see *Code quality and security checks*).
 - **prestashop**: installs PrestaShop 9 in Docker, installs the built zip, runs `demo/setup.php` twice (the second run must change nothing, and no password may appear in the log), translates the sample product, category and page with `supertext:translate` against the stand-in API and checks the German and French rows, slug included; a second run must skip everything. Then it checks the Commando Center: exactly one `installed` report (plugin, system, key check `ok`, callback URL; never the key) reached the stand-in's fake center, and the public ping answers the challenge with `Cache-Control: no-store` (400 for a bad challenge).
 
