@@ -4,7 +4,7 @@ How the module works, how to run it locally, how it's tested, deployed and relea
 
 ## Architecture
 
-PrestaShop module `supertext` (folder `supertext/`, PHP 8.1+, PrestaShop 8.1+ / 9.x). It adds a page to the back office and hooks into three lists; translations are written into the items' own language fields (`*_lang` tables).
+PrestaShop module `supertext` (folder `supertext/`, PHP 8.3+, PrestaShop 9.x). It adds a page to the back office and hooks into three lists; translations are written into the items' own language fields (`*_lang` tables).
 
 ```
 supertext/
@@ -199,7 +199,7 @@ composer test        # PHPUnit: SDK wrapper, language codes, reporting, field pl
 
 CI (`.github/workflows/ci.yml`):
 
-- **unit** (PHP 8.1, 8.3, 8.4, 8.5): lint, PHPUnit, `sh -n demo/entrypoint.sh`, `./build.sh`.
+- **unit** (PHP 8.3, 8.4, 8.5): lint, PHPUnit, `sh -n demo/entrypoint.sh`, `./build.sh`.
 - **phpstan**: PHPStan on the module's code with the PrestaShop 9 sources (see *Code quality and security checks*).
 - **prestashop**: installs PrestaShop 9 in Docker, installs the built zip, runs `demo/setup.php` twice (the second run must change nothing, and no password may appear in the log), translates the sample product, category and page with `supertext:translate` against the stand-in API and checks the German and French rows, slug included; a second run must skip everything. Then it checks the Commando Center: exactly one `installed` report (plugin, system, key check `ok`, callback URL; never the key) reached the stand-in's fake center, and the public ping answers the challenge with `Cache-Control: no-store` (400 for a bad challenge).
 
@@ -344,7 +344,7 @@ Dependabot opens weekly pull requests (minor and patch updates grouped). Major u
 
 `.github/workflows/dependabot-merge.yml` merges a minor or patch package update by itself once every other check on its pull request has passed (it waits up to 85 minutes and leaves the pull request alone if a check fails). GitHub Actions updates and majors stay for a person: the workflow's built-in token can't merge changes to workflow files, and a major needs a decision. Merges by the workflow don't start CI on `main`; the weekly health check looks at `main`.
 
-- `phpunit/phpunit` >=11: PHPUnit 11 and later need PHP 8.2+; the module supports PHP 8.1 (CI tests 8.1). PHP 8.1 is past its end of life (31 Dec 2025), but PrestaShop 8.2, which still gets security fixes until PrestaShop 10 is released, runs only up to PHP 8.1, so the module keeps it until it drops PrestaShop 8.
+- `phpunit/phpunit` >=13: PHPUnit 13 and later need PHP 8.4+; the module supports PHP 8.3 (CI tests 8.3).
 
 Remove a rule when the plugin's minimum version (PHP, CMS) moves up far enough.
 

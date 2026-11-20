@@ -4,6 +4,9 @@ All notable changes to this project are documented here.
 
 ## Unreleased
 
+- Removed: support for PrestaShop 8.1 and 8.2. The module now needs PrestaShop 9 (`ps_versions_compliancy` min 9.0.0); shops still on PrestaShop 8 keep using module 1.0.x.
+- Removed: support for PHP 8.1 (end of life since 31 Dec 2025) and PHP 8.2 (end of life on 31 Dec 2026). The module now needs PHP 8.3 or later; PrestaShop 9.1 and 9.2 run on up to PHP 8.5.
+
 ## 1.0.0 — 2026-11-10
 
 First stable release. Every plugin release is now tested end to end against the live Supertext API (`.github/workflows/e2e.yml`).

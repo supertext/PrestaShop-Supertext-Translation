@@ -46,7 +46,7 @@ class Supertext extends Module
         $this->author                 = 'Supertext';
         $this->need_instance          = 0;
         $this->bootstrap              = true;
-        $this->ps_versions_compliancy = ['min' => '8.1.0', 'max' => '9.99.99'];
+        $this->ps_versions_compliancy = ['min' => '9.0.0', 'max' => '9.99.99'];
 
         parent::__construct();
 

@@ -10,8 +10,8 @@ A ready-to-run container with PrestaShop 9, English sample products, a category 
 
 | | |
 | --- | --- |
-| PrestaShop | 9.x (tested with 9.2), 8.1 and 8.2 (supported, not yet tested) |
-| PHP | 8.1 or later (whatever your PrestaShop version needs: PrestaShop 8.1 and 8.2 run up to PHP 8.1, PrestaShop 9 needs 8.1 or later), with `ext-dom` and `ext-curl` |
+| PrestaShop | 9.x (tested with 9.2). PrestaShop 8 is no longer supported: shops on 8.1 or 8.2 keep using module 1.0.x. |
+| PHP | 8.3 or later (PrestaShop 9.1 and 9.2 run on PHP 8.1 to 8.5 and recommend 8.5), with `ext-dom` and `ext-curl` |
 | Shop setup | At least two languages (step 3) |
 | Supertext | An account with an API key, see [Get a Supertext account and API key](#get-a-supertext-account-and-api-key) |
 | Network | The web server must reach `https://api.supertext.com` over HTTPS (and, for [Translation review](#translation-review), Supertext's review service) |
