@@ -4,7 +4,7 @@ name: E2E
 # 1. against the REAL Supertext API (secret SUPERTEXT_API_KEY): language list check and the
 #    end-to-end test (tests/e2e), so language mapping and the live API's behaviour are tested;
 # 2. against the stand-in API (tests/docs): the docs screenshots, so the images don't change
-#    with every machine translation. Changed images become a pull request.
+#    with every machine translation. Changed images are committed to main.
 # See "End-to-end tests" and "Docs screenshots" in docs/DEVELOPER.md.
 
 on:
@@ -148,6 +148,7 @@ jobs:
 
       # --- 2. Docs screenshots against the stand-in ----------------------------------------
       - name: Screenshots against the stand-in API
+        id: shots
         if: success() || failure()
         run: |
           (cd tests/docs && nohup node stand-in.mjs > stand-in.log 2>&1 &)
@@ -170,7 +171,7 @@ jobs:
 
       - name: Did the screenshots change?
         id: images
-        if: success() || failure()
+        if: (success() || failure()) && steps.shots.outcome == 'success'
         run: |
           if [ -n "$(git status --porcelain docs/images)" ]; then
             git status --short docs/images
@@ -203,17 +204,18 @@ jobs:
           path: e2e-debug/
           retention-days: 7
 
-  screenshots-pr:
-    name: Pull request with new screenshots
+  screenshots-commit:
+    name: Commit the new screenshots
     needs: e2e
     if: needs.e2e.outputs.images-changed == 'true' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: main
+          fetch-depth: 20
           persist-credentials: false
 
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -221,21 +223,27 @@ jobs:
           name: docs-images
           path: docs/images/
 
-      - name: Push a branch and open (or update) the pull request
+      # Straight to main, no pull request to review: the images come from the stand-in, and a push
+      # with the workflow's own token starts no other workflow. See "End-to-end tests" in docs/DEVELOPER.md.
+      - name: Commit the images to main
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          branch=automation/docs-screenshots
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git checkout -b "$branch"
           git add docs/images
-          git commit -m "Docs: regenerate screenshots" -m "Made by the E2E workflow: $RUN_URL"
-          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "$branch"
-          if [ -z "$(gh pr list --repo "$REPO" --head "$branch" --state open --json number --jq '.[].number')" ]; then
-            gh pr create --repo "$REPO" --head "$branch" --base main \
-              --title "Docs: regenerate screenshots" \
-              --body "The E2E workflow took new screenshots of the demo (against the stand-in API) and they differ from \`docs/images/\`. Check that the changes are intended before merging. Run: $RUN_URL"
+          if git diff --cached --quiet; then
+            echo "The screenshots on main are already up to date."
+            exit 0
           fi
+          git commit -q -m "Docs: regenerate screenshots" -m "Made by the E2E workflow: $RUN_URL"
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          for attempt in 1 2 3; do
+            if git push -q "$remote" HEAD:main; then exit 0; fi
+            echo "main moved on (attempt $attempt): rebasing the screenshot commit"
+            git pull -q --rebase "$remote" main
+          done
+          exit 1
