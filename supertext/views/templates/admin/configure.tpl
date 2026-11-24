@@ -94,6 +94,7 @@
           </div>
           <p class="help-block">
             {l s='Sends the site URL and the versions of this module, the shop and the runtime to Supertext when you save these settings and after an update, so Supertext support can see which version you run. No content, no API key and no personal data are sent.' d='Modules.Supertext.Admin'}
+            {if $st.superAdmin}<br>{l s='Send configuration to Supertext' d='Modules.Supertext.Admin'}: {l s='Sends Supertext the modules installed in this shop (name, version, enabled or not) and the Supertext language of each shop language, so Supertext support can help better. Nothing else is sent.' d='Modules.Supertext.Admin'}{/if}
             {if $st.versionReportsFromEnv}
               <br><strong class="st-reports-env">{if $st.versionReportsEnabled}{l s='The SUPERTEXT_VERSION_REPORTS environment variable is set and turns it on.' d='Modules.Supertext.Admin'}{else}{l s='The SUPERTEXT_VERSION_REPORTS environment variable is set and turns it off.' d='Modules.Supertext.Admin'}{/if}</strong>
             {/if}
@@ -105,6 +106,7 @@
     <div class="panel-footer">
       <button type="submit" name="submitSupertextSettings" value="1" class="btn btn-default pull-right"><i class="process-icon-save"></i> {l s='Save' d='Modules.Supertext.Admin'}</button>
       <button type="submit" name="submitSupertextTest" value="1" class="btn btn-default"><i class="process-icon-refresh"></i> {l s='Test connection' d='Modules.Supertext.Admin'}</button>
+      {if $st.superAdmin}<button type="submit" name="submitSupertextConfig" value="1" class="btn btn-default" title="{l s='Sends Supertext the modules installed in this shop (name, version, enabled or not) and the Supertext language of each shop language, so Supertext support can help better. Nothing else is sent.' d='Modules.Supertext.Admin'}"><i class="process-icon-upload"></i> {l s='Send configuration to Supertext' d='Modules.Supertext.Admin'}</button>{/if}
     </div>
   </div>
 

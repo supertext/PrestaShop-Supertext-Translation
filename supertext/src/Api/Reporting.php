@@ -118,6 +118,21 @@ final class Reporting
         return $this->run(static fn (InstallationReporter $r, ReporterState $s): ReporterResult => $r->testConnection($s, $apiKey));
     }
 
+    /**
+     * "Send configuration to Supertext": one `extensions` report with the installed modules and the
+     * language mapping, sent now (also within the hour after a failed report). Nothing with reports off.
+     *
+     * @param list<array{name: string, version?: ?string, active?: ?bool, type?: ?string}> $extensions
+     * @param list<array{code: string, supertext: ?string}>                                $languages
+     */
+    public function sendConfiguration(array $extensions, array $languages): ?ReporterResult
+    {
+        return $this->run(
+            static fn (InstallationReporter $r, ReporterState $s): ReporterResult => $r->sendExtensions($s, $extensions),
+            static fn (): array => $languages,
+        );
+    }
+
     /** The stored state (empty if none or unreadable). */
     public function state(): ReporterState
     {
@@ -134,7 +149,8 @@ final class Reporting
         return $this->state()->keyCheck;
     }
 
-    public function reporter(): InstallationReporter
+    /** @param (callable(): list<array{code: string, supertext: ?string}>)|null $languages the language mapping (sendConfiguration only) */
+    public function reporter(?callable $languages = null): InstallationReporter
     {
         return new InstallationReporter(
             enabled: $this->enabled && $this->siteUrl !== null,
@@ -158,14 +174,15 @@ final class Reporting
             reportUrl: $this->reportUrl,
             transport: $this->transport === null ? null : new ReportTransport($this->transport),
             now: $this->now,
+            languages: $languages,
         );
     }
 
     /** @param \Closure(InstallationReporter, ReporterState): ReporterResult $action */
-    private function run(\Closure $action): ?ReporterResult
+    private function run(\Closure $action, ?callable $languages = null): ?ReporterResult
     {
         try {
-            $result = $action($this->reporter(), $this->state());
+            $result = $action($this->reporter($languages), $this->state());
         } catch (\Throwable) {
             return null;
         }

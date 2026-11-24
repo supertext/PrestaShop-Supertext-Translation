@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 /**
- * Regenerates docs/images from a freshly started demo whose module talks to stand-in.mjs
- * (SUPERTEXT_API_ENDPOINT=http://127.0.0.1:8765/v1/). See docs/DEVELOPER.md -> Docs screenshots.
+ * Regenerates docs/images from a freshly started demo. With DOCS_API_KEY (CI: the secret
+ * SUPERTEXT_API_KEY) the module translates with the real Supertext API; without it, start the demo
+ * with SUPERTEXT_API_ENDPOINT=http://127.0.0.1:8765/v1/ (stand-in.mjs). Never SUPERTEXT_API_KEY:
+ * the script enters the key on the settings page. See docs/DEVELOPER.md -> Docs screenshots.
  *
  *   BASE_URL (default http://localhost:8090/admin-dev)
  *   DEMO_ADMIN_EMAIL / DEMO_ADMIN_PASSWORD     settings screens (SuperAdmin)
  *   DEMO_EDITOR_EMAIL / DEMO_EDITOR_PASSWORD   translating (Translator profile)
+ *   DOCS_API_KEY                               Supertext API key entered on the settings page (default: any key, for the stand-in)
  */
 import { chromium } from 'playwright'
 
@@ -44,7 +47,7 @@ async function session(email, password) {
   const { page, shot, box, go } = await session(process.env.DEMO_ADMIN_EMAIL, process.env.DEMO_ADMIN_PASSWORD)
 
   await go('/index.php?controller=AdminModules&configure=supertext')
-  await page.fill('#supertext-api-key', 'Supertext-Auth-Key docs-demo-key')
+  await page.fill('#supertext-api-key', process.env.DOCS_API_KEY || 'Supertext-Auth-Key docs-demo-key')
   await page.locator('#supertext-connection button[name=submitSupertextSettings]').click()
   await page.waitForLoadState('networkidle')
   await page.locator('button[name=submitSupertextTest]').click()
@@ -53,6 +56,8 @@ async function session(email, password) {
   // The time of the key check changes with every run: show a fixed one, so the image only
   // changes when the screen does.
   await page.locator('#supertext-key-check small').evaluateAll((els) => els.forEach((e) => { e.textContent = 'Checked 10/01/2026 09:00:00' }))
+  // The field shows the saved key's last characters: never the real key's.
+  await page.locator('#supertext-api-key').evaluate((e) => { e.placeholder = e.placeholder.replace(/…[^)]*\)/, '…0000)') })
   await shot('module-settings', union(await box('.alert-success', 2), await box('#supertext-connection', 2)))
 
   // An example override: formal German (not saved).
@@ -85,7 +90,7 @@ async function session(email, password) {
   await shot('translate-page', await box('.supertext-page .card'))
 
   await page.locator('.st-go').click()
-  await page.locator('.st-summary').waitFor({ state: 'visible', timeout: 120000 })
+  await page.locator('.st-summary').waitFor({ state: 'visible', timeout: 300000 })
   await shot('translate-results', await box('.supertext-page .card'))
 
   // The German translation on the product page.
@@ -115,7 +120,7 @@ async function session(email, password) {
   await page.locator('#st-lang-' + (await page.locator('.st-target').nth(1).getAttribute('value'))).uncheck()
   await page.locator('#st-lang-' + (await page.locator('.st-target').nth(2).getAttribute('value'))).uncheck()
   await page.locator('.st-go').click()
-  await page.locator('.st-summary').waitFor({ state: 'visible', timeout: 120000 })
+  await page.locator('.st-summary').waitFor({ state: 'visible', timeout: 300000 })
   await page.reload()
   await page.waitForLoadState('networkidle')
   await page.check('#st-overwrite')

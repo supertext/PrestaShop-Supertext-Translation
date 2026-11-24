@@ -170,6 +170,8 @@ Settings are global (the same for all shops of a multistore installation).
 | unreachable | *The API key couldn't be checked because Supertext can't be reached. …* |
 | error | *The API key couldn't be checked: Supertext answered with an error (…).* |
 
+**Send configuration to Supertext** (button at the bottom of the *Supertext connection* panel, SuperAdmins only) sends Supertext, on demand, the modules installed in the shop (name, version, enabled or not) and the Supertext language of each shop language, so Supertext support can help with a setup question. It sends nothing else, and only while version information is on and saved; the notice then says how many modules and languages were sent.
+
 **The ping endpoint** `https://<your shop>/index.php?fc=module&module=supertext&controller=ping&challenge=…` is public (no login) and answers only `{"ok":true,"plugin":"PrestaShop-Supertext-Translation","challenge":"…"}`, so Supertext can see that the shop is reachable from the internet. It returns nothing else: no versions, no settings, no data, and it skips PrestaShop's storefront (no cookie, cart, maintenance page or redirect). If a firewall or a full-page cache sits in front of the shop, let this URL through uncached.
 
 The module keeps this state (what was reported last, the latest key check, the key's fingerprint) in the configuration value `SUPERTEXT_REPORTER_STATE`; uninstalling removes it.

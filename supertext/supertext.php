@@ -104,6 +104,43 @@ class Supertext extends Module
 
     /* ------------------------------------------------------------------ settings page */
 
+    /**
+     * "Send configuration to Supertext" (SuperAdmin only): the installed modules and every shop
+     * language with its Supertext code, in one `extensions` report. Nothing while reports are off.
+     */
+    private function sendConfiguration(): string
+    {
+        if (!$this->context->employee || !$this->context->employee->isSuperAdmin()) {
+            return $this->displayError($this->trans('Only SuperAdmins can send the configuration.', [], 'Modules.Supertext.Admin'));
+        }
+
+        if (!Settings::versionReportsEnabled()) {
+            return $this->displayError($this->trans('Turn on "Send version information to Supertext" and save to send the configuration.', [], 'Modules.Supertext.Admin'));
+        }
+
+        $extensions = [];
+
+        foreach (Module::getModulesInstalled() as $module) {
+            $extensions[] = ['name' => (string) $module['name'], 'version' => (string) $module['version'] !== '' ? (string) $module['version'] : null, 'active' => (bool) $module['active'], 'type' => 'module'];
+        }
+
+        usort($extensions, static fn (array $a, array $b): int => strcmp($a['name'], $b['name']));
+        $saved     = Settings::languages();
+        $languages = [];
+
+        foreach (Language::getLanguages(false) as $language) {
+            $id          = (int) $language['id_lang'];
+            $locale      = Settings::localeOf(new Language($id));
+            $languages[] = ['code' => $locale, 'supertext' => LanguageCodes::targetOrNull($locale, $saved[$id]['code'] ?? '')];
+        }
+
+        $result = Settings::reporting()->sendConfiguration($extensions, $languages);
+
+        return $result !== null && $result->sent
+            ? $this->displayConfirmation($this->trans('Sent: %modules% modules, %languages% languages.', ['%modules%' => \count($extensions), '%languages%' => \count($languages)], 'Modules.Supertext.Admin'))
+            : $this->displayError($this->trans('The configuration couldn\'t be sent. Try again later.', [], 'Modules.Supertext.Admin'));
+    }
+
     public function getContent(): string
     {
         $messages = '';
@@ -117,6 +154,8 @@ class Supertext extends Module
                 $check = Settings::reporting()->afterSettingsSaved(Settings::apiKey())?->check;
                 $messages .= $check !== null ? $this->displayKeyCheck($check) : '';
             }
+        } elseif (Tools::isSubmit('submitSupertextConfig')) {
+            $messages .= $this->sendConfiguration();
         } elseif (Tools::isSubmit('submitSupertextTest')) {
             $check = Settings::reporting()->testConnection(Settings::apiKey())?->check;
             $messages .= $check !== null ? $this->displayKeyCheck($check) : $this->displayError($this->noKeyMessage());
@@ -166,6 +205,7 @@ class Supertext extends Module
                 'hasKey'         => $key !== '',
                 'keyHint'        => $key !== '' ? '…' . substr(Settings::apiKey(), -4) : '',
                 'keyFromEnv'     => Settings::apiKeyFromEnvironment(),
+                'superAdmin'     => $this->context->employee && $this->context->employee->isSuperAdmin(),
                 'endpointFromEnv' => Settings::endpointFromEnvironment(),
                 'environment'    => Settings::environment(),
                 'endpoint'       => Settings::customEndpoint(),

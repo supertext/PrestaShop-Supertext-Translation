@@ -3,8 +3,9 @@ name: E2E
 # The demo image is built once and started twice:
 # 1. against the REAL Supertext API (secret SUPERTEXT_API_KEY): language list check and the
 #    end-to-end test (tests/e2e), so language mapping and the live API's behaviour are tested;
-# 2. against the stand-in API (tests/docs): the docs screenshots, so the images don't change
-#    with every machine translation. Changed images are committed to main.
+# 2. for the docs screenshots (tests/docs), with the same secret, so the guides show real
+#    Supertext translations (without the secret: the stand-in API). Version reports always go
+#    to the stand-in. Changed images are committed to main.
 # See "End-to-end tests" and "Docs screenshots" in docs/DEVELOPER.md.
 
 on:
@@ -146,16 +147,26 @@ jobs:
           E2E_TARGETS: de-CH,fr-CH,it-CH
         run: node live.mjs
 
-      # --- 2. Docs screenshots against the stand-in ----------------------------------------
-      - name: Screenshots against the stand-in API
+      # --- 2. Docs screenshots with the real Supertext API -------------------------------
+      - name: Screenshots with the real Supertext API
         id: shots
         if: success() || failure()
+        env:
+          LIVE_KEY: ${{ secrets.SUPERTEXT_API_KEY }}
         run: |
+          # The stand-in always takes the version reports; it translates only without the secret.
           (cd tests/docs && nohup node stand-in.mjs > stand-in.log 2>&1 &)
-          # No SUPERTEXT_API_KEY: the screenshot script enters a key on the settings page.
+          # No SUPERTEXT_API_KEY in the container: the screenshot script enters the key (DOCS_API_KEY)
+          # on the settings page.
+          if [ -n "$LIVE_KEY" ]; then
+            export DOCS_API_KEY="$LIVE_KEY"; api=()
+          else
+            echo "::warning::Secret SUPERTEXT_API_KEY is not set: the screenshots use the stand-in API's translations."
+            api=(-e SUPERTEXT_API_ENDPOINT=http://127.0.0.1:8765/v1/)
+          fi
           docker run -d --name demo-docs --network host \
             -e PORT=8082 -e PRESTASHOP_DOMAIN=localhost:8082 -e DATABASE_URL -e PRESTASHOP_DB_NAME=prestashop_docs \
-            -e SUPERTEXT_API_ENDPOINT=http://127.0.0.1:8765/v1/ \
+            "${api[@]}" \
             -e SUPERTEXT_REPORT_URL=http://127.0.0.1:8765/report \
             -e DEMO_ADMIN_EMAIL -e DEMO_ADMIN_PASSWORD -e DEMO_EDITOR_EMAIL -e DEMO_EDITOR_PASSWORD \
             supertext-prestashop-demo
@@ -223,7 +234,7 @@ jobs:
           name: docs-images
           path: docs/images/
 
-      # Straight to main, no pull request to review: the images come from the stand-in, and a push
+      # Straight to main, no pull request to review: the images come from the E2E run, and a push
       # with the workflow's own token starts no other workflow. See "End-to-end tests" in docs/DEVELOPER.md.
       - name: Commit the images to main
         env:

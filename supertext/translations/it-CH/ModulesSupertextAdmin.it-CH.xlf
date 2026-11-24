@@ -242,6 +242,10 @@
         <source>Nothing to translate.</source>
         <target>Niente da tradurre.</target>
       </trans-unit>
+      <trans-unit id="06b19efc67878edbd275d935e318087d">
+        <source>Only SuperAdmins can send the configuration.</source>
+        <target>Solo i SuperAdmin possono inviare la configurazione.</target>
+      </trans-unit>
       <trans-unit id="305855943686a357f7b930465bea6e96">
         <source>Optional. Overrides the environment, e.g. for a test server.</source>
         <target>Facoltativo. Sostituisce l’ambiente, ad es. per un server di test.</target>
@@ -294,13 +298,25 @@
         <source>Select at least one item to translate.</source>
         <target>Selezioni almeno un elemento da tradurre.</target>
       </trans-unit>
+      <trans-unit id="e625f029bc047ba1f4b849c37da0c98e">
+        <source>Send configuration to Supertext</source>
+        <target>Invia la configurazione a Supertext</target>
+      </trans-unit>
       <trans-unit id="e390447c5c1a2f2e58e59211c8a05d87">
         <source>Send version information to Supertext</source>
         <target>Inviare le informazioni sulla versione a Supertext</target>
       </trans-unit>
+      <trans-unit id="eff362fa5e30e6838dfa2e14ebcea361">
+        <source>Sends Supertext the modules installed in this shop (name, version, enabled or not) and the Supertext language of each shop language, so Supertext support can help better. Nothing else is sent.</source>
+        <target>Invia a Supertext i moduli installati in questo negozio (nome, versione, abilitato o no) e la lingua Supertext di ogni lingua del negozio, affinché il supporto Supertext possa aiutarla meglio. Non viene inviato nient’altro.</target>
+      </trans-unit>
       <trans-unit id="12d513cb6f6e2af8549c90f83e45785e">
         <source>Sends the site URL and the versions of this module, the shop and the runtime to Supertext when you save these settings and after an update, so Supertext support can see which version you run. No content, no API key and no personal data are sent.</source>
         <target>Invia a Supertext l'URL del sito e le versioni di questo modulo, del negozio e dell'ambiente di esecuzione quando salva queste impostazioni e dopo un aggiornamento. In questo modo l'assistenza Supertext vede quale versione utilizza. Non vengono trasmessi contenuti, chiavi API né dati personali.</target>
+      </trans-unit>
+      <trans-unit id="9ba733cb208e374e62fbb0027c4fc306">
+        <source>Sent: %modules% modules, %languages% languages.</source>
+        <target>Inviato: %modules% moduli, %languages% lingue.</target>
       </trans-unit>
       <trans-unit id="4d49c18411e89604e450387e428e53d8">
         <source>Set by the SUPERTEXT_API_KEY environment variable on the server.</source>
@@ -413,6 +429,10 @@
       <trans-unit id="23572cdc1ab2c62d5c29d89d99818dd3">
         <source>The Supertext service is currently unavailable.</source>
         <target>Il servizio Supertext non è al momento disponibile.</target>
+      </trans-unit>
+      <trans-unit id="825f58be3221b462f200d38e6221ba01">
+        <source>The configuration couldn't be sent. Try again later.</source>
+        <target>Non è stato possibile inviare la configurazione. Riprovi più tardi.</target>
       </trans-unit>
       <trans-unit id="a56f860986a395a648b94586c6d82c9c">
         <source>The content is too large for Supertext to translate in one go.</source>
@@ -549,6 +569,10 @@
       <trans-unit id="de300b4fa11417b793ca858d771ad614">
         <source>Translation review: translations into a language with this box ticked go through Supertext's review service, so reviewers can check and correct them on your shop's website with the Supertext Localization Review extension. Their corrections are used the next time the item is translated.</source>
         <target>Revisione delle traduzioni: le traduzioni in una lingua con questa casella selezionata passano dal servizio di revisione di Supertext, così i revisori possono controllarle e correggerle direttamente sul sito del Suo negozio con l’estensione Supertext Localization Review. Le loro correzioni vengono riprese alla prossima traduzione del prodotto, della categoria o della pagina.</target>
+      </trans-unit>
+      <trans-unit id="36de76c1f68f737beea5576a0dd92443">
+        <source>Turn on "Send version information to Supertext" and save to send the configuration.</source>
+        <target>Attivi «Inviare le informazioni sulla versione a Supertext» e salvi per inviare la configurazione.</target>
       </trans-unit>
       <trans-unit id="9c0229a92cbba3c2186662317d8b28bc">
         <source>User guide</source>

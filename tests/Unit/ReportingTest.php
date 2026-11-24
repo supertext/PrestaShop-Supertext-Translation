@@ -116,7 +116,29 @@ final class ReportingTest extends TestCase
 
         self::assertNull($this->reporting()->onRequest(self::KEY)?->event);
         self::assertSame([], $this->calls);
-        self::assertSame($before, $this->state, 'stored in the same format');
+        // Plugin Health 0.2+ adds keyChecks and reportedKeyStatuses (null with one key); everything else is kept.
+        self::assertSame(json_decode($before, true) + ['keyChecks' => null, 'reportedKeyStatuses' => null], json_decode((string) $this->state, true), 'stored in the same format');
+    }
+
+    public function testSendConfigurationSendsModulesAndTheLanguageMapping(): void
+    {
+        $modules   = [['name' => 'ps_facetedsearch', 'version' => '4.0.2', 'active' => true, 'type' => 'module']];
+        $languages = [['code' => 'en-US', 'supertext' => 'en-US'], ['code' => 'de-CH', 'supertext' => 'de-CH'], ['code' => 'en-IE', 'supertext' => null]];
+
+        $result = $this->reporting()->sendConfiguration($modules, $languages);
+
+        self::assertSame('extensions', $result?->event);
+        self::assertTrue($result->sent);
+        [$report] = $this->reports();
+        self::assertSame('extensions', $report['event']);
+        self::assertSame($modules, $report['extensions']);
+        self::assertSame($languages, $report['languages']);
+    }
+
+    public function testSendConfigurationSendsNothingWithReportsOff(): void
+    {
+        self::assertFalse((bool) $this->reporting(enabled: false)->sendConfiguration([['name' => 'ps_x']], [['code' => 'de-CH', 'supertext' => 'de-CH']])?->sent);
+        self::assertSame([], $this->reports());
     }
 
     public function testRejectedTranslationIsReportedOnce(): void
