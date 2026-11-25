@@ -6,6 +6,7 @@ All notable changes to this project are documented here.
 
 - Added: **Send configuration to Supertext** on the settings page (SuperAdmins): sends Supertext the installed modules (name, version, enabled or not) and the Supertext language of each shop language, so Supertext support can help better. Nothing is sent while version information is off. All four interface languages. Supertext Plugin Health 0.4.0.
 - Changed: the screenshots in the guides show real Supertext translations (the E2E workflow takes them with the live API; version reports still go to the stand-in).
+- Added: the module's unit tests also run on PHP 8.6 (PrestaShop itself supports PHP up to 8.5 so far).
 
 - Removed: support for PrestaShop 8.1 and 8.2. The module now needs PrestaShop 9 (`ps_versions_compliancy` min 9.0.0); shops still on PrestaShop 8 keep using module 1.0.x.
 - Removed: support for PHP 8.1 (end of life since 31 Dec 2025) and PHP 8.2 (end of life on 31 Dec 2026). The module now needs PHP 8.3 or later; PrestaShop 9.1 and 9.2 run on up to PHP 8.5.
