@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## Unreleased
 
+### Security
+
+- The *Translate with Supertext* page needs at least view access to the item's back-office tab (products, categories, CMS pages, …); before, any signed-in employee could open it and see the items' names.
+
 ## 1.1.0 — 2026-11-26
 
 - Added: Indonesian, Romanian, Thai and Vietnamese (`id`, `ro`, `th`, `vi`) can be chosen as Supertext languages, all with formal and informal address (Supertext SDK 0.7.0).

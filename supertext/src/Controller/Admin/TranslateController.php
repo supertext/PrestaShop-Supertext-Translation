@@ -52,6 +52,12 @@ class TranslateController extends FrameworkBundleAdminController
         }
 
         $definition = EntityTypes::get($type);
+
+        // Item names and texts only for employees who may at least view the item's tab.
+        if (!self::canAccess($definition['tab'], 'READ')) {
+            throw $this->createAccessDeniedException($this->t('You are not allowed to edit this item.'));
+        }
+
         $ids        = EntityTypes::ids($request->query->all()['ids'] ?? $request->query->get('id', ''));
         $ids        = \array_slice(array_values(array_filter($ids, static fn (int $id): bool => EntityTranslator::exists($type, $id))), 0, self::MAX_ITEMS);
         $languages  = \Language::getLanguages(false);
@@ -303,9 +309,15 @@ class TranslateController extends FrameworkBundleAdminController
 
     private static function canEdit(string $tab): bool
     {
+        return self::canAccess($tab, 'UPDATE');
+    }
+
+    /** Whether the signed-in employee's profile has $level (READ, UPDATE, …) on the back-office tab. */
+    private static function canAccess(string $tab, string $level): bool
+    {
         $employee = \Context::getContext()->employee;
 
-        return $employee !== null && \Access::isGranted('ROLE_MOD_TAB_' . strtoupper($tab) . '_UPDATE', (int) $employee->id_profile);
+        return $employee !== null && \Access::isGranted('ROLE_MOD_TAB_' . strtoupper($tab) . '_' . $level, (int) $employee->id_profile);
     }
 
     private function typeLabel(string $type): string
