@@ -321,6 +321,7 @@ Voice: Piper voice “alba” (en_GB), trained on a dataset from the University 
 
 ## Code quality and security checks
 
+- **Scorecard** workflow (`.github/workflows/scorecard.yml`; weekly, on every push to `main` and when branch protection changes): [OpenSSF Scorecard](https://scorecard.dev) scores the repo's security practices (pinned actions, token permissions, branch protection, dependency updates, static analysis); findings appear under *Security → Code scanning*, results are published to the public Scorecard API.
 Before starting work in this repo, look at its open findings: code scanning alerts, secret scanning alerts, Dependabot PRs and the "Broken links in the docs" issue.
 
 - **Checks** (`.github/workflows/checks.yml`): actionlint and zizmor lint the workflows on every push and pull request; dependency review fails a pull request that adds a package with a known vulnerability (moderate or worse). Third-party actions are pinned to commit SHAs (Dependabot keeps them current).
